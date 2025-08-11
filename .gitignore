@@ -207,7 +207,7 @@ marimo/_lsp/
 __marimo__/
 
 # Project-specific
-data/
-logs/
+/data/
+/logs/
 *.db
-chroma/
+/chroma/
