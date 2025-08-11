@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     api_rate_limit_period: int = Field(
         default=60, description="API rate limit period in seconds"
     )
+    api_keys: Optional[str] = Field(
+        default=None, description="Comma-separated list of valid API keys"
+    )
 
     # Authentication
     jwt_secret_key: str = Field(
