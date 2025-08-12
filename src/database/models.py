@@ -14,6 +14,12 @@ from sqlalchemy.sql import func
 
 from .connection import Base
 
+# Import email models to ensure they're registered with SQLAlchemy
+from .email_models import (
+    Person, Project, Email, EmailRecipient, EmailThread,
+    person_projects, RecipientType
+)
+
 
 # Association tables for many-to-many relationships
 user_roles = Table(
