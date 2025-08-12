@@ -146,8 +146,9 @@ class DatabaseManager:
             if self._engine is None:
                 await self.initialize()
             
+            from sqlalchemy import text
             async with self._engine.connect() as conn:
-                await conn.execute("SELECT 1")
+                await conn.execute(text("SELECT 1"))
             
             logger.info("Database connection test successful")
             return True

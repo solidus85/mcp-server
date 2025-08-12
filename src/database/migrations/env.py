@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).parents[3]))
 
 from src.database.connection import Base
 from src.database.models import *  # Import all models
+from src.database.email_models import *  # Import email models
 from src.config import settings
 
 # this is the Alembic Config object, which provides

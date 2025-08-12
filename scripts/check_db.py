@@ -54,7 +54,8 @@ async def check_database():
             # Get session and check
             async with db_manager.get_session() as session:
                 # Try a simple query
-                result = await session.execute("SELECT 1")
+                from sqlalchemy import text
+                result = await session.execute(text("SELECT 1"))
                 print("✅ Query execution successful!")
             
             print("\n" + "=" * 60)

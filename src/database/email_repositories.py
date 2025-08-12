@@ -19,6 +19,9 @@ logger = setup_logging("Database.EmailRepositories")
 class PersonRepository(BaseRepository[Person]):
     """Repository for Person operations"""
     
+    def __init__(self, session: AsyncSession):
+        super().__init__(Person, session)
+    
     async def get_by_email(self, email: str) -> Optional[Person]:
         """Get person by email address"""
         stmt = select(Person).where(
@@ -95,10 +98,52 @@ class PersonRepository(BaseRepository[Person]):
         )
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
+    
+    async def add_to_project(
+        self,
+        person_id: str,
+        project_id: str,
+        role: str = "member"
+    ) -> bool:
+        """Add person to project"""
+        from sqlalchemy import insert
+        try:
+            stmt = insert(person_projects).values(
+                person_id=person_id,
+                project_id=project_id,
+                role=role
+            )
+            await self.session.execute(stmt)
+            return True
+        except Exception as e:
+            logger.error(f"Error adding person to project: {e}")
+            return False
+    
+    async def remove_from_project(
+        self,
+        person_id: str,
+        project_id: str
+    ) -> bool:
+        """Remove person from project"""
+        try:
+            stmt = delete(person_projects).where(
+                and_(
+                    person_projects.c.person_id == person_id,
+                    person_projects.c.project_id == project_id
+                )
+            )
+            await self.session.execute(stmt)
+            return True
+        except Exception as e:
+            logger.error(f"Error removing person from project: {e}")
+            return False
 
 
 class ProjectRepository(BaseRepository[Project]):
     """Repository for Project operations"""
+    
+    def __init__(self, session: AsyncSession):
+        super().__init__(Project, session)
     
     async def get_by_name(self, name: str) -> Optional[Project]:
         """Get project by name"""
@@ -110,11 +155,23 @@ class ProjectRepository(BaseRepository[Project]):
     
     async def get_by_domain(self, domain: str) -> Optional[Project]:
         """Get project by email domain"""
+        # Get all projects and check domains in Python to avoid PostgreSQL array function issues
         stmt = select(Project).where(
-            func.lower(domain) == func.any(func.lower(Project.email_domains))
+            and_(
+                Project.is_active == True,
+                Project.email_domains.isnot(None)
+            )
         )
         result = await self.session.execute(stmt)
-        return result.scalar_one_or_none()
+        projects = result.scalars().all()
+        
+        domain_lower = domain.lower()
+        for project in projects:
+            if project.email_domains:
+                for proj_domain in project.email_domains:
+                    if proj_domain.lower() == domain_lower:
+                        return project
+        return None
     
     async def find_project_for_email(
         self,
@@ -126,12 +183,12 @@ class ProjectRepository(BaseRepository[Project]):
         all_emails = [from_email] + to_emails + (cc_emails or [])
         domains = list(set(email.split('@')[-1].lower() for email in all_emails))
         
-        # Find projects that match any of the domains
+        # Get all active projects with auto-assign enabled
         stmt = select(Project).where(
             and_(
                 Project.is_active == True,
                 Project.auto_assign == True,
-                or_(*[func.lower(d) == func.any(func.lower(Project.email_domains)) for d in domains])
+                Project.email_domains.isnot(None)
             )
         )
         result = await self.session.execute(stmt)
@@ -140,12 +197,18 @@ class ProjectRepository(BaseRepository[Project]):
         if not projects:
             return None
         
-        # Return the project with the most domain matches
+        # Find projects that match email domains
         best_project = None
         best_score = 0
         
         for project in projects:
-            score = sum(1 for d in domains if project.has_domain(f"test@{d}"))
+            if not project.email_domains:
+                continue
+                
+            # Count matching domains (case-insensitive)
+            project_domains_lower = [d.lower() for d in project.email_domains]
+            score = sum(1 for d in domains if d in project_domains_lower)
+            
             if score > best_score:
                 best_score = score
                 best_project = project
@@ -196,6 +259,9 @@ class ProjectRepository(BaseRepository[Project]):
 
 class EmailRepository(BaseRepository[Email]):
     """Repository for Email operations"""
+    
+    def __init__(self, session: AsyncSession):
+        super().__init__(Email, session)
     
     async def get_by_email_id(self, email_id: str) -> Optional[Email]:
         """Get email by external email ID"""
@@ -267,8 +333,8 @@ class EmailRepository(BaseRepository[Email]):
             return existing
         
         # Get or create people
-        person_repo = PersonRepository(Person, self.session)
-        project_repo = ProjectRepository(Project, self.session)
+        person_repo = PersonRepository(self.session)
+        project_repo = ProjectRepository(self.session)
         
         # Create sender
         sender, _ = await person_repo.get_or_create(from_email)
@@ -328,7 +394,8 @@ class EmailRepository(BaseRepository[Email]):
         # Update thread statistics
         await self.update_thread_stats(thread_id)
         
-        return email
+        # Fetch the email with all relationships loaded
+        return await self.get_by_email_id(email_id)
     
     async def update_thread_stats(self, thread_id: str):
         """Update email thread statistics"""
@@ -438,6 +505,10 @@ class EmailRepository(BaseRepository[Email]):
         
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
+    
+    async def get_thread_emails(self, thread_id: str) -> List[Email]:
+        """Get all emails in a thread"""
+        return await self.search_emails(thread_id=thread_id, limit=1000)
 
 
 class EmailThreadRepository(BaseRepository[EmailThread]):
@@ -451,5 +522,4 @@ class EmailThreadRepository(BaseRepository[EmailThread]):
     
     async def get_thread_emails(self, thread_id: str) -> List[Email]:
         """Get all emails in a thread"""
-        email_repo = EmailRepository(Email, self.session)
-        return await email_repo.search_emails(thread_id=thread_id, limit=1000)
+        return await self.search_emails(thread_id=thread_id, limit=1000)

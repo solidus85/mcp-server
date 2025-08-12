@@ -14,12 +14,6 @@ from sqlalchemy.sql import func
 
 from .connection import Base
 
-# Import email models to ensure they're registered with SQLAlchemy
-from .email_models import (
-    Person, Project, Email, EmailRecipient, EmailThread,
-    person_projects, RecipientType
-)
-
 
 # Association tables for many-to-many relationships
 user_roles = Table(
@@ -162,7 +156,7 @@ class Document(Base, TimestampMixin):
     # Document metadata
     document_type: Mapped[str] = mapped_column(String(50), default="text")
     source_url: Mapped[Optional[str]] = mapped_column(Text)
-    metadata: Mapped[Optional[Dict]] = mapped_column(JSON, default=dict)
+    doc_metadata: Mapped[Optional[Dict]] = mapped_column(JSON, default=dict)
     
     # Processing information
     chunk_count: Mapped[int] = mapped_column(Integer, default=1)
@@ -322,7 +316,7 @@ class AuditLog(Base):
     new_values: Mapped[Optional[Dict]] = mapped_column(JSON)
     
     # Additional context
-    metadata: Mapped[Optional[Dict]] = mapped_column(JSON, default=dict)
+    audit_metadata: Mapped[Optional[Dict]] = mapped_column(JSON, default=dict)
     
     # Foreign keys
     user_id: Mapped[Optional[str]] = mapped_column(

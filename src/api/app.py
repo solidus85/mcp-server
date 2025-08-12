@@ -11,6 +11,7 @@ from ..config import settings
 from ..utils import setup_logging
 from .middleware import setup_middleware
 from .routes import health_router, auth_router, tools_router, resources_router, vector_router
+from .routes.email_routes import email_router, person_router, project_router
 
 
 # Metrics
@@ -63,6 +64,9 @@ app.include_router(auth_router, prefix="/auth")
 app.include_router(tools_router, prefix=f"{settings.api_prefix}/tools")
 app.include_router(resources_router, prefix=f"{settings.api_prefix}/resources")
 app.include_router(vector_router, prefix=f"{settings.api_prefix}/vectors")
+app.include_router(email_router, prefix=f"{settings.api_prefix}/emails")
+app.include_router(person_router, prefix=f"{settings.api_prefix}/people")
+app.include_router(project_router, prefix=f"{settings.api_prefix}/projects")
 
 
 # Root endpoint

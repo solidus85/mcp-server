@@ -13,7 +13,25 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
 
 from .connection import Base
-from .models import TimestampMixin
+# Import TimestampMixin definition directly to avoid circular import
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import DateTime
+from sqlalchemy.sql import func
+
+
+class TimestampMixin:
+    """Mixin for created_at and updated_at timestamps"""
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False
+    )
 
 
 # Enum for recipient types
@@ -52,7 +70,7 @@ class Person(Base, TimestampMixin):
     # Additional metadata
     organization: Mapped[Optional[str]] = mapped_column(String(200))
     phone: Mapped[Optional[str]] = mapped_column(String(50))
-    metadata: Mapped[Optional[Dict]] = mapped_column(JSONB, default=dict)
+    person_metadata: Mapped[Optional[Dict]] = mapped_column(JSONB, default=dict)
     
     # Flags
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -119,7 +137,7 @@ class Project(Base, TimestampMixin):
     )
     
     # Additional metadata
-    metadata: Mapped[Optional[Dict]] = mapped_column(JSONB, default=dict)
+    project_metadata: Mapped[Optional[Dict]] = mapped_column(JSONB, default=dict)
     tags: Mapped[Optional[List[str]]] = mapped_column(ARRAY(String), default=list)
     
     # Relationships
