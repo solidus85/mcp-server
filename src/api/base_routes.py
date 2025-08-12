@@ -4,7 +4,7 @@ from fastapi.responses import StreamingResponse
 import time
 import json
 
-from .schemas import (
+from .base_schemas import (
     HealthResponse,
     ToolExecutionRequest, ToolExecutionResponse, ToolListResponse, ToolInfo,
     ResourceListResponse, ResourceReadResponse, ResourceInfo,

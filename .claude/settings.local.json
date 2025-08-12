@@ -1,7 +1,23 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(.venv/bin/pytest tests/ --tb=no)",
+      "Bash(.venv/bin/pytest tests/ --tb=no -v)",
+      "Bash(.venv/bin/pytest tests/test_api/test_emails.py -v --tb=short)",
+      "Bash(.venv/bin/pytest tests/test_api/test_emails.py::TestEmailIngestion::test_ingest_single_email -v --tb=line)",
+      "Bash(.venv/bin/pytest tests/test_api/test_emails.py::TestEmailIngestion::test_ingest_single_email -vvs --tb=short)",
+      "Bash(find:*)",
+      "Bash(.venv/bin/pytest tests/test_api/test_emails.py::TestEmailIngestion::test_ingest_single_email -xvs)",
+      "Bash(.venv/bin/pytest tests/test_api/test_emails.py::TestEmailIngestion::test_ingest_single_email -xvs --tb=short)",
+      "Bash(.venv/bin/pytest tests/test_api/test_emails.py -v --tb=no)",
+      "Bash(.venv/bin/pytest tests/test_api/test_emails.py::TestEmailIngestion::test_ingest_single_email -xvs --tb=line)",
+      "Bash(.venv/bin/pytest tests/test_api/test_emails.py::TestEmailIngestion::test_ingest_single_email -xvs --log-cli-level=ERROR)",
+      "Bash(.venv/bin/pytest tests/test_api/test_emails.py::TestEmailIngestion::test_ingest_single_email -xvs --tb=no)",
+      "Bash(.venv/bin/pytest tests/test_api/test_emails.py::TestEmailRetrieval::test_get_email_by_id -xvs --tb=short)",
+      "Bash(.venv/bin/pytest tests/test_api/test_emails.py::TestEmailOperations::test_bulk_mark_as_read -xvs --tb=line)",
+      "Bash(.venv/bin/pytest tests/test_api/test_emails.py::TestEmailRetrieval::test_list_emails -xvs --tb=short)",
+      "Bash(.venv/bin/pytest tests/test_api/test_emails.py::TestEmailIngestion -xvs --tb=line)"
     ],
     "deny": []
   }

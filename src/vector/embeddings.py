@@ -1,11 +1,14 @@
-from sentence_transformers import SentenceTransformer
-from typing import List, Optional, Union
+from typing import List, Optional, Union, TYPE_CHECKING
 import numpy as np
 import logging
 from chromadb.api.types import EmbeddingFunction
 
 from ..config import settings
 from ..utils import setup_logging, Timer
+
+# Lazy import to avoid slow startup
+if TYPE_CHECKING:
+    from sentence_transformers import SentenceTransformer
 
 
 class EmbeddingService:
@@ -15,11 +18,15 @@ class EmbeddingService:
         self.model_name = model_name or settings.embedding_model
         self.logger = setup_logging("EmbeddingService")
         self.model = None
-        self._load_model()
+        # Don't load model immediately - wait until first use
+        # self._load_model()
 
     def _load_model(self):
         """Load the sentence transformer model"""
         try:
+            # Lazy import here to avoid slow startup
+            from sentence_transformers import SentenceTransformer
+            
             with Timer(f"Loading embedding model {self.model_name}", self.logger):
                 self.model = SentenceTransformer(self.model_name)
             self.logger.info(f"Loaded embedding model: {self.model_name}")
@@ -35,6 +42,10 @@ class EmbeddingService:
         normalize: bool = True,
     ) -> np.ndarray:
         """Generate embeddings for text(s)"""
+        # Ensure model is loaded (lazy loading)
+        if self.model is None:
+            self._load_model()
+            
         if isinstance(texts, str):
             texts = [texts]
         
@@ -63,6 +74,10 @@ class EmbeddingService:
         normalize: bool = True,
     ) -> np.ndarray:
         """Generate embeddings specifically for queries (may use different pooling)"""
+        # Ensure model is loaded (lazy loading)
+        if self.model is None:
+            self._load_model()
+            
         if isinstance(queries, str):
             queries = [queries]
         
@@ -84,6 +99,10 @@ class EmbeddingService:
         normalize: bool = True,
     ) -> np.ndarray:
         """Generate embeddings specifically for documents"""
+        # Ensure model is loaded (lazy loading)
+        if self.model is None:
+            self._load_model()
+            
         if isinstance(documents, str):
             documents = [documents]
         
@@ -121,10 +140,16 @@ class EmbeddingService:
 
     def get_embedding_dimension(self) -> int:
         """Get the dimension of the embeddings"""
+        # Ensure model is loaded (lazy loading)
+        if self.model is None:
+            self._load_model()
         return self.model.get_sentence_embedding_dimension()
 
     def get_max_sequence_length(self) -> int:
         """Get the maximum sequence length the model can handle"""
+        # Ensure model is loaded (lazy loading)
+        if self.model is None:
+            self._load_model()
         return self.model.max_seq_length
 
     def get_embedding_function(self) -> EmbeddingFunction:

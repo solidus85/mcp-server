@@ -9,7 +9,7 @@ from starlette.middleware.cors import CORSMiddleware
 import logging
 
 from ..utils import setup_logging, generate_id, get_timestamp
-from .schemas import ErrorResponse
+from .base_schemas import ErrorResponse
 
 
 logger = setup_logging("API.Middleware")

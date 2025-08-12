@@ -7,7 +7,7 @@ from sqlalchemy import (
     Column, String, Integer, Float, Boolean, DateTime, Text, JSON,
     ForeignKey, Index, UniqueConstraint, CheckConstraint, Table, Enum
 )
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from .types import JSONType, ArrayType, MutableJSONType, get_mutable_array_type
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql import func
@@ -57,7 +57,7 @@ class Person(Base, TimestampMixin):
     """Person model for email participants"""
     __tablename__ = "people"
     __table_args__ = (
-        Index("ix_people_email", "email"),
+        # The email column already has unique=True which creates an index automatically
         Index("ix_people_name", "first_name", "last_name"),
     )
     
@@ -70,7 +70,7 @@ class Person(Base, TimestampMixin):
     # Additional metadata
     organization: Mapped[Optional[str]] = mapped_column(String(200))
     phone: Mapped[Optional[str]] = mapped_column(String(50))
-    person_metadata: Mapped[Optional[Dict]] = mapped_column(JSONB, default=dict)
+    person_metadata: Mapped[Optional[Dict]] = mapped_column(MutableJSONType, default=dict)
     
     # Flags
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -123,7 +123,7 @@ class Project(Base, TimestampMixin):
     
     # PostgreSQL ARRAY type for multiple email domains
     email_domains: Mapped[Optional[List[str]]] = mapped_column(
-        ARRAY(String),
+        get_mutable_array_type(String),
         default=list,
         comment="List of email domains associated with this project"
     )
@@ -137,8 +137,8 @@ class Project(Base, TimestampMixin):
     )
     
     # Additional metadata
-    project_metadata: Mapped[Optional[Dict]] = mapped_column(JSONB, default=dict)
-    tags: Mapped[Optional[List[str]]] = mapped_column(ARRAY(String), default=list)
+    project_metadata: Mapped[Optional[Dict]] = mapped_column(MutableJSONType, default=dict)
+    tags: Mapped[Optional[List[str]]] = mapped_column(get_mutable_array_type(String), default=list)
     
     # Relationships
     people: Mapped[List["Person"]] = relationship(
@@ -190,8 +190,8 @@ class Email(Base, TimestampMixin):
     
     # Metadata
     datetime_sent: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    headers: Mapped[Optional[Dict]] = mapped_column(JSONB, default=dict)
-    attachments: Mapped[Optional[List[Dict]]] = mapped_column(JSONB, default=list)
+    headers: Mapped[Optional[Dict]] = mapped_column(MutableJSONType, default=dict)
+    attachments: Mapped[Optional[List[Dict]]] = mapped_column(JSONType, default=list)
     size_bytes: Mapped[Optional[int]] = mapped_column(Integer)
     
     # Flags
@@ -303,7 +303,7 @@ class EmailThread(Base, TimestampMixin):
     last_email_date: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     
     # Participants list (stored as JSON array of email addresses)
-    participants: Mapped[List[str]] = mapped_column(JSONB, default=list)
+    participants: Mapped[List[str]] = mapped_column(JSONType, default=list)
     
     # Project association
     project_id: Mapped[Optional[str]] = mapped_column(

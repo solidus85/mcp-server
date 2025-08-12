@@ -2,10 +2,14 @@
 Unit tests for email models and repositories
 """
 
+import os
 import pytest
+import pytest_asyncio
 import asyncio
 from datetime import datetime
 from typing import AsyncGenerator
+from pathlib import Path
+from dotenv import load_dotenv
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.pool import NullPool
@@ -14,21 +18,27 @@ from src.database.connection import Base
 from src.database.email_models import Person, Project, Email, EmailRecipient, RecipientType
 from src.database.email_repositories import PersonRepository, ProjectRepository, EmailRepository
 
+# Load test environment variables
+test_env_path = Path(__file__).parent / ".env.test"
+load_dotenv(test_env_path)
 
-# Test database URL (using SQLite for tests)
-TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+# Get test database URL from environment
+TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "postgresql+asyncpg://test_mcp_user:test_mcp_pass@localhost:5432/test_mcp_db")
 
 
-@pytest.fixture(scope="function")
-async def async_session() -> AsyncGenerator[AsyncSession, None]:
+@pytest_asyncio.fixture(scope="function")
+async def async_session() -> AsyncSession:
     """Create a test database session"""
     engine = create_async_engine(
         TEST_DATABASE_URL,
         echo=False,
         poolclass=NullPool,
+        pool_pre_ping=True,  # Check connections before using
     )
     
+    # Drop and recreate all tables for clean test environment
     async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
     
     async_session_maker = async_sessionmaker(
