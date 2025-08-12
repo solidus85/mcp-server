@@ -144,6 +144,15 @@ ENV/
 env.bak/
 venv.bak/
 
+# Additional environment files
+.env.local
+.env.production
+.env.development
+.env.*.local
+.secrets/
+*.pgpass
+database.ini
+
 # Spyder project settings
 .spyderproject
 .spyproject
