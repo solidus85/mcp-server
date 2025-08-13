@@ -54,7 +54,10 @@ class BaseRepository(Generic[ModelType]):
             update_data = data if data else kwargs
             for key, value in update_data.items():
                 if hasattr(instance, key):
-                    setattr(instance, key, value)
+                    # Skip None values to preserve existing data
+                    # This is important for partial updates
+                    if value is not None:
+                        setattr(instance, key, value)
             await self.session.flush()
         return instance
     

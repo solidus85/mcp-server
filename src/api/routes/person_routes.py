@@ -46,7 +46,7 @@ async def create_person(
     return person
 
 
-@person_router.get("/search")
+@person_router.get("/search", response_model=List[PersonResponse])
 async def search_people(
     q: Optional[str] = Query(None, description="Search query"),
     organization: Optional[str] = Query(None),
@@ -179,13 +179,16 @@ async def replace_person(
 ):
     """Replace person information (full update)"""
     repo = PersonRepository(db)
-    person = await repo.update(person_id, data=person_data.model_dump())
+    # For PUT, we exclude unset fields to avoid overwriting with None
+    # This allows partial updates while preserving existing data
+    person = await repo.update(person_id, data=person_data.model_dump(exclude_unset=True))
     if not person:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Person not found"
         )
     await db.commit()
+    await db.refresh(person)  # Refresh to avoid detached instance issues
     return person
 
 
@@ -205,6 +208,7 @@ async def update_person(
             detail="Person not found"
         )
     await db.commit()
+    await db.refresh(person)  # Refresh to avoid detached instance issues
     return person
 
 
