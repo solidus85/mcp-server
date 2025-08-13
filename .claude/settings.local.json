@@ -70,7 +70,8 @@
       "Bash(.venv/bin/pytest tests/test_api/test_email_ingestion.py -v --tb=no)",
       "Bash(.venv/bin/pytest tests/test_api/test_email_crud.py tests/test_api/test_email_operations.py tests/test_api/test_email_stats.py -v --tb=no)",
       "Bash(git commit:*)",
-      "Bash(.venv/bin/pytest tests/test_api/test_people_crud.py tests/test_api/test_people_search.py tests/test_api/test_people_relationships.py -v --tb=no)"
+      "Bash(.venv/bin/pytest tests/test_api/test_people_crud.py tests/test_api/test_people_search.py tests/test_api/test_people_relationships.py -v --tb=no)",
+      "Bash(.venv/bin/pytest tests/test_api/test_project_crud.py tests/test_api/test_project_people.py tests/test_api/test_project_search.py tests/test_api/test_project_stats.py -v --tb=no)"
     ],
     "deny": []
   }
