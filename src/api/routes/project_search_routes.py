@@ -28,9 +28,6 @@ async def search_projects(
     current_user: dict = Depends(get_current_user)
 ):
     """Search projects by name or domain"""
-    # Write debug to file to ensure we see it
-    with open('/tmp/search_debug.log', 'a') as f:
-        f.write(f"Search endpoint called with q={q}, domain={domain}, user={current_user}\n")
     
     try:
         repo = ProjectRepository(db)
@@ -61,9 +58,6 @@ async def search_projects(
         
         return result
     except Exception as e:
-        import traceback
-        print(f"Search endpoint error: {e}")
-        print(traceback.format_exc())
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error searching projects: {str(e)}"
