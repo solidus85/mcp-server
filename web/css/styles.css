@@ -1,0 +1,242 @@
+/* Custom styles for MCP Server API Tester */
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.dark ::-webkit-scrollbar-track {
+    background: #374151;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Method badges */
+.method-get {
+    background-color: #10b981;
+    color: white;
+}
+
+.method-post {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.method-put {
+    background-color: #f59e0b;
+    color: white;
+}
+
+.method-patch {
+    background-color: #8b5cf6;
+    color: white;
+}
+
+.method-delete {
+    background-color: #ef4444;
+    color: white;
+}
+
+.method-head {
+    background-color: #6b7280;
+    color: white;
+}
+
+.method-options {
+    background-color: #1f2937;
+    color: white;
+}
+
+/* Endpoint item styling */
+.endpoint-item {
+    transition: all 0.2s ease;
+}
+
+.endpoint-item:hover {
+    transform: translateX(4px);
+}
+
+.endpoint-item.active {
+    background-color: #eff6ff;
+    border-left: 3px solid #3b82f6;
+}
+
+.dark .endpoint-item.active {
+    background-color: #1e3a8a;
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+    max-height: 500px;
+    overflow: auto;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Loading spinner */
+.spinner {
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3b82f6;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Status code colors */
+.status-success {
+    color: #10b981;
+}
+
+.status-redirect {
+    color: #f59e0b;
+}
+
+.status-client-error {
+    color: #ef4444;
+}
+
+.status-server-error {
+    color: #dc2626;
+}
+
+/* Collapsible sections */
+.collapsible {
+    cursor: pointer;
+    user-select: none;
+}
+
+.collapsible::before {
+    content: '▶';
+    display: inline-block;
+    margin-right: 6px;
+    transition: transform 0.2s;
+}
+
+.collapsible.expanded::before {
+    transform: rotate(90deg);
+}
+
+/* Input focus styles */
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    ring: 2px;
+    ring-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+/* Dark mode adjustments */
+.dark input, .dark textarea, .dark select {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: white;
+}
+
+.dark input::placeholder, .dark textarea::placeholder {
+    color: #9ca3af;
+}
+
+/* Animation for auth indicator */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.auth-authenticated {
+    background-color: #10b981;
+    animation: pulse 2s infinite;
+}
+
+/* History item hover effect */
+.history-item:hover {
+    background-color: #f9fafb;
+}
+
+.dark .history-item:hover {
+    background-color: #374151;
+}
+
+/* Custom checkbox styling */
+.checkbox {
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #d1d5db;
+    border-radius: 0.25rem;
+    background-color: white;
+    cursor: pointer;
+}
+
+.checkbox:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.checkbox:checked::after {
+    content: '✓';
+    display: block;
+    text-align: center;
+    color: white;
+    font-size: 0.75rem;
+    line-height: 0.75rem;
+}
+
+/* Tooltip styling */
+.tooltip {
+    position: relative;
+}
+
+.tooltip:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #1f2937;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    z-index: 10;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    aside {
+        width: 100%;
+        position: fixed;
+        z-index: 40;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    aside.open {
+        transform: translateX(0);
+    }
+    
+    main {
+        margin-left: 0;
+    }
+}
