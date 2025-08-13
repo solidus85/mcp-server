@@ -5,10 +5,8 @@ Project statistics and analytics API endpoints
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.database.email_repositories import (
-    EmailRepository,
-    ProjectRepository
-)
+from src.database.email_repository import EmailRepository
+from src.database.project_repository import ProjectRepository
 from src.api.schemas.email_schemas import ProjectStatistics
 from src.api.dependencies import get_current_user
 from src.database.models import User

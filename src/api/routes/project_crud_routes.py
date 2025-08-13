@@ -6,7 +6,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.database.email_repositories import ProjectRepository
+from src.database.project_repository import ProjectRepository
 from src.api.schemas.email_schemas import (
     ProjectCreate,
     ProjectUpdate,
@@ -73,17 +73,17 @@ async def get_project(
     # Add email count
     email_count = await repo.get_email_count(project_id)
     project_dict = {
-        "id": project.id,
+        "id": str(project.id),
         "name": project.name,
         "description": project.description,
         "email_domains": project.email_domains,
         "is_active": project.is_active,
         "auto_assign": project.auto_assign,
-        "project_metadata": project.project_metadata,
-        "tags": project.tags,
-        "created_at": project.created_at,
-        "updated_at": project.updated_at,
-        "people": project.people,
+        "project_metadata": project.project_metadata or {},
+        "tags": project.tags or [],
+        "created_at": project.created_at.isoformat() if project.created_at else None,
+        "updated_at": project.updated_at.isoformat() if project.updated_at else None,
+        "people": project.people if hasattr(project, 'people') else [],
         "email_count": email_count
     }
     
@@ -128,34 +128,35 @@ async def list_projects(
 @project_crud_router.put("/{project_id}", response_model=ProjectResponse)
 async def replace_project(
     project_id: str,
-    update_data: ProjectCreate,
+    update_data: ProjectUpdate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Replace/fully update a project"""
     repo = ProjectRepository(db)
-    project = await repo.update(project_id, update_data.model_dump())
+    project = await repo.update(project_id, update_data.model_dump(exclude_unset=True))
     if not project:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Project not found"
         )
     await db.commit()
+    await db.refresh(project)
     
     # Add email count
     email_count = await repo.get_email_count(project_id)
     project_dict = {
-        "id": project.id,
+        "id": str(project.id),
         "name": project.name,
         "description": project.description,
         "email_domains": project.email_domains,
         "is_active": project.is_active,
         "auto_assign": project.auto_assign,
-        "project_metadata": project.project_metadata,
-        "tags": project.tags,
-        "created_at": project.created_at,
-        "updated_at": project.updated_at,
-        "people": project.people,
+        "project_metadata": project.project_metadata or {},
+        "tags": project.tags or [],
+        "created_at": project.created_at.isoformat() if project.created_at else None,
+        "updated_at": project.updated_at.isoformat() if project.updated_at else None,
+        "people": project.people if hasattr(project, 'people') else [],
         "email_count": email_count
     }
     
@@ -178,21 +179,22 @@ async def update_project(
             detail="Project not found"
         )
     await db.commit()
+    await db.refresh(project)
     
     # Add email count
     email_count = await repo.get_email_count(project_id)
     project_dict = {
-        "id": project.id,
+        "id": str(project.id),
         "name": project.name,
         "description": project.description,
         "email_domains": project.email_domains,
         "is_active": project.is_active,
         "auto_assign": project.auto_assign,
-        "project_metadata": project.project_metadata,
-        "tags": project.tags,
-        "created_at": project.created_at,
-        "updated_at": project.updated_at,
-        "people": project.people,
+        "project_metadata": project.project_metadata or {},
+        "tags": project.tags or [],
+        "created_at": project.created_at.isoformat() if project.created_at else None,
+        "updated_at": project.updated_at.isoformat() if project.updated_at else None,
+        "people": project.people if hasattr(project, 'people') else [],
         "email_count": email_count
     }
     

@@ -6,7 +6,7 @@ from typing import Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.database.email_repositories import PersonRepository
+from src.database.person_repository import PersonRepository
 from src.api.schemas.email_schemas import BulkPersonProjectAssign
 from src.api.dependencies import get_current_user
 from src.database.models import User
