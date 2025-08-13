@@ -14,6 +14,7 @@ from .base_routes import health_router, tools_router, resources_router, vector_r
 from .routes import email_router, person_router, project_router
 from .routes.auth_routes import auth_router
 from .routes.document_routes import document_router, protected_router, admin_router
+from .routes.system_routes import system_router
 
 
 # Metrics
@@ -72,6 +73,7 @@ app.include_router(project_router, prefix=f"{settings.api_prefix}")
 app.include_router(document_router, prefix=f"{settings.api_prefix}")
 app.include_router(protected_router, prefix=f"{settings.api_prefix}")
 app.include_router(admin_router, prefix=f"{settings.api_prefix}")
+app.include_router(system_router, prefix=f"{settings.api_prefix}")
 
 
 # Root endpoint
