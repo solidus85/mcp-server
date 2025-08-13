@@ -241,3 +241,6 @@ TEST_DATABASE_URL=postgresql+asyncpg://test_mcp_user:test_mcp_pass@localhost:543
 ## Session Summary
 
 This session successfully migrated the test infrastructure from SQLite to PostgreSQL, fixed numerous compatibility issues, and established a working email ingestion pipeline. The foundation is solid for continuing development of the remaining API endpoints and features.
+- When running python, use the .venv environment
+- Keep all files under 400 lines.
+- Commit all changes to git

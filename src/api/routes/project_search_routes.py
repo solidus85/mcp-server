@@ -8,11 +8,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.project_repository import ProjectRepository
 from src.api.dependencies import get_current_user
-from src.database.models import User
 from .base import get_db
 
 # Create router (without prefix - will be added by main router)
 project_search_router = APIRouter(tags=["project-search"])
+
+
+@project_search_router.get("/test")
+async def test_endpoint():
+    """Test endpoint to verify routing works - no auth required"""
+    return {"message": "Test endpoint works", "status": "success"}
 
 
 @project_search_router.get("/search")
@@ -20,13 +25,12 @@ async def search_projects(
     q: Optional[str] = Query(None, description="Search query"),
     domain: Optional[str] = Query(None, description="Email domain filter"),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """Search projects by name or domain"""
-    # Debug logging
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.error(f"Search endpoint called with q={q}, domain={domain}")
+    # Write debug to file to ensure we see it
+    with open('/tmp/search_debug.log', 'a') as f:
+        f.write(f"Search endpoint called with q={q}, domain={domain}, user={current_user}\n")
     
     try:
         repo = ProjectRepository(db)
@@ -70,7 +74,7 @@ async def search_projects(
 async def find_project_for_email(
     data: Dict[str, str],
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user)
 ):
     """Find the appropriate project for an email address"""
     email = data.get("email")

@@ -46,7 +46,12 @@
       "Bash(grep:*)",
       "Bash(.venv/bin/pytest tests/test_api/test_emails.py::TestEmailStatistics::test_email_statistics_overall -xvs --tb=line)",
       "Bash(.venv/bin/pytest tests/test_api/test_emails.py::TestEmailRetrieval::test_search_emails_by_sender -xvs --tb=line)",
-      "Bash(.venv/bin/pytest tests/test_api/test_emails.py::TestEmailRetrieval::test_search_emails_by_sender -xvs)"
+      "Bash(.venv/bin/pytest tests/test_api/test_emails.py::TestEmailRetrieval::test_search_emails_by_sender -xvs)",
+      "Bash(pytest:*)",
+      "Bash(python:*)",
+      "Bash(DATABASE_URL=postgresql+asyncpg://test_mcp_user:test_mcp_pass@localhost:5432/test_mcp_db alembic upgrade head)",
+      "Bash(git add:*)",
+      "Bash(DATABASE_URL=postgresql+asyncpg://test_mcp_user:test_mcp_pass@localhost:5432/test_mcp_db alembic downgrade base)"
     ],
     "deny": []
   }
