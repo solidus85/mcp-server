@@ -66,7 +66,10 @@
       "Bash(rm:*)",
       "Bash(.venv/bin/pytest tests/test_api/test_projects.py::TestProjectSearch::test_search_projects_by_name -xvs --tb=no)",
       "Bash(.venv/bin/pytest tests/test_api/test_projects.py::TestProjectSearch -v --tb=short)",
-      "Bash(.venv/bin/pytest tests/test_api/test_projects.py::TestProjectSearch -v --tb=no)"
+      "Bash(.venv/bin/pytest tests/test_api/test_projects.py::TestProjectSearch -v --tb=no)",
+      "Bash(.venv/bin/pytest tests/test_api/test_email_ingestion.py -v --tb=no)",
+      "Bash(.venv/bin/pytest tests/test_api/test_email_crud.py tests/test_api/test_email_operations.py tests/test_api/test_email_stats.py -v --tb=no)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }
