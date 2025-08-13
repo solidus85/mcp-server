@@ -1,6 +1,6 @@
 from typing import Optional, Literal
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field, validator
+from pydantic import Field, field_validator
 from pathlib import Path
 
 
@@ -80,13 +80,15 @@ class Settings(BaseSettings):
     enable_metrics: bool = Field(default=True, description="Enable metrics")
     metrics_port: int = Field(default=9090, description="Metrics port")
 
-    @validator("chroma_persist_directory", pre=True)
+    @field_validator("chroma_persist_directory", mode="before")
+    @classmethod
     def ensure_path(cls, v):
         if isinstance(v, str):
             return Path(v)
         return v
 
-    @validator("jwt_secret_key")
+    @field_validator("jwt_secret_key")
+    @classmethod
     def validate_jwt_secret(cls, v):
         if v == "change-this-in-production":
             import warnings

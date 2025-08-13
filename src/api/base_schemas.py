@@ -1,5 +1,5 @@
 from typing import Any, Dict, List, Optional, Union
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, model_validator, ConfigDict
 from datetime import datetime
 from enum import Enum
 
@@ -41,13 +41,14 @@ class ToolExecutionRequest(BaseModel):
     arguments: Dict[str, Any] = Field(default_factory=dict)
     timeout: Optional[int] = Field(default=30, ge=1, le=300)
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "arguments": {"path": "/tmp/file.txt", "encoding": "utf-8"},
                 "timeout": 30
             }
         }
+    )
 
 
 class ToolExecutionResponse(BaseResponse):
@@ -99,19 +100,21 @@ class EmbeddingRequest(BaseModel):
     model: Optional[str] = None
     normalize: bool = Field(default=True)
     
-    @validator('texts')
+    @field_validator('texts')
+    @classmethod
     def validate_texts(cls, v):
         if isinstance(v, str):
             return [v]
         return v
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "texts": ["Sample text to embed"],
                 "normalize": True
             }
         }
+    )
 
 
 class EmbeddingResponse(BaseResponse):
@@ -129,14 +132,15 @@ class VectorSearchRequest(BaseModel):
     filter: Optional[Dict[str, Any]] = None
     include_metadata: bool = Field(default=True)
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "query": "machine learning algorithms",
                 "limit": 10,
                 "include_metadata": True
             }
         }
+    )
 
 
 class SearchResult(BaseModel):
@@ -161,27 +165,22 @@ class DocumentIngestionRequest(BaseModel):
     metadatas: Optional[List[Dict[str, Any]]] = None
     ids: Optional[List[str]] = None
     
-    @validator('metadatas')
-    def validate_metadatas(cls, v, values):
-        if v and 'documents' in values:
-            if len(v) != len(values['documents']):
-                raise ValueError('metadatas must have same length as documents')
-        return v
+    @model_validator(mode='after')
+    def validate_lengths(self):
+        if self.metadatas and len(self.metadatas) != len(self.documents):
+            raise ValueError('metadatas must have same length as documents')
+        if self.ids and len(self.ids) != len(self.documents):
+            raise ValueError('ids must have same length as documents')
+        return self
     
-    @validator('ids')
-    def validate_ids(cls, v, values):
-        if v and 'documents' in values:
-            if len(v) != len(values['documents']):
-                raise ValueError('ids must have same length as documents')
-        return v
-    
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "documents": ["Document 1 content", "Document 2 content"],
                 "metadatas": [{"source": "file1.txt"}, {"source": "file2.txt"}]
             }
         }
+    )
 
 
 class DocumentIngestionResponse(BaseResponse):
@@ -222,14 +221,15 @@ class LLMGenerateRequest(BaseModel):
     temperature: float = Field(default=0.7, ge=0, le=2)
     stream: bool = Field(default=False)
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "prompt": "Explain quantum computing in simple terms",
                 "max_tokens": 500,
                 "temperature": 0.7
             }
         }
+    )
 
 
 class LLMGenerateResponse(BaseResponse):
@@ -246,13 +246,14 @@ class LLMAnalyzeRequest(BaseModel):
     analysis_type: str = Field(default="general")
     model: Optional[str] = None
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "text": "Text to analyze",
                 "analysis_type": "sentiment"
             }
         }
+    )
 
 
 class LLMAnalyzeResponse(BaseResponse):
@@ -269,13 +270,14 @@ class DataTransformRequest(BaseModel):
     transform_type: str
     options: Optional[Dict[str, Any]] = None
     
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "data": {"key": "value"},
                 "transform_type": "json_to_csv"
             }
         }
+    )
 
 
 class DataTransformResponse(BaseResponse):

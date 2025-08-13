@@ -9,7 +9,7 @@ from functools import wraps
 import time
 import asyncio
 from logging.handlers import RotatingFileHandler
-from pythonjsonlogger import jsonlogger
+from pythonjsonlogger.json import JsonFormatter
 
 
 def setup_logging(
@@ -25,7 +25,7 @@ def setup_logging(
 
     # Create formatters
     if json_format:
-        formatter = jsonlogger.JsonFormatter(
+        formatter = JsonFormatter(
             "%(timestamp)s %(level)s %(name)s %(message)s",
             timestamp=True,
         )
