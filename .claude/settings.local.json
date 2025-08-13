@@ -65,7 +65,8 @@
       "Bash(.venv/bin/pytest tests/test_api/test_projects.py::TestProjectSearch::test_search_projects_by_name -xvs --tb=short)",
       "Bash(rm:*)",
       "Bash(.venv/bin/pytest tests/test_api/test_projects.py::TestProjectSearch::test_search_projects_by_name -xvs --tb=no)",
-      "Bash(.venv/bin/pytest tests/test_api/test_projects.py::TestProjectSearch -v --tb=short)"
+      "Bash(.venv/bin/pytest tests/test_api/test_projects.py::TestProjectSearch -v --tb=short)",
+      "Bash(.venv/bin/pytest tests/test_api/test_projects.py::TestProjectSearch -v --tb=no)"
     ],
     "deny": []
   }
