@@ -40,9 +40,9 @@ class EmailRepository:
         """Create a new email"""
         return await self._ingestion_repo.create(**kwargs)
     
-    async def update(self, id: str, data: Dict[str, Any]) -> Optional[Email]:
+    async def update(self, id: str, data: Dict[str, Any] = None, **kwargs) -> Optional[Email]:
         """Update an email"""
-        return await self._ingestion_repo.update(id, data)
+        return await self._ingestion_repo.update(id, data, **kwargs)
     
     async def delete(self, id: str) -> bool:
         """Delete an email"""

@@ -55,7 +55,9 @@
       "Bash(.venv/bin/pytest tests/test_api/test_people.py -v --tb=short)",
       "Bash(.venv/bin/pytest tests/test_api/test_people.py::TestPeopleEndpoints::test_update_person -xvs --tb=short)",
       "Bash(.venv/bin/pytest tests/test_api/test_people.py::TestPeopleEndpoints::test_update_person -xvs --tb=line)",
-      "Bash(.venv/bin/pytest tests/test_api/test_people.py::TestPeopleSearch::test_search_people_by_name -xvs --tb=short)"
+      "Bash(.venv/bin/pytest tests/test_api/test_people.py::TestPeopleSearch::test_search_people_by_name -xvs --tb=short)",
+      "Bash(.venv/bin/pytest tests/test_email_models.py -v --tb=short)",
+      "Bash(.venv/bin/pytest tests/test_email_models.py -v --tb=no)"
     ],
     "deny": []
   }
