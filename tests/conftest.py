@@ -51,16 +51,19 @@ async def test_engine():
         pool_pre_ping=True,  # Check connections before using
     )
     
-    # Drop all tables first to ensure clean state
+    # Don't drop tables - they should already exist from migrations
+    # Just ensure tables exist
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        # Create tables if they don't exist (won't drop existing)
         await conn.run_sync(Base.metadata.create_all)
     
     yield engine
     
-    # Clean up after test
+    # Clean up data after test (but keep tables)
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        # Delete data from all tables in reverse order of dependencies
+        from sqlalchemy import text
+        await conn.execute(text("TRUNCATE TABLE email_recipients, email_threads, emails, person_projects, people, projects, document_tags, documents, tags, tools, resources, queries, audit_logs, sessions, api_keys, user_roles, users, roles CASCADE"))
     
     await engine.dispose()
 

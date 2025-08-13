@@ -23,19 +23,47 @@ async def search_projects(
     current_user: User = Depends(get_current_user)
 ):
     """Search projects by name or domain"""
-    repo = ProjectRepository(db)
+    # Debug logging
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.error(f"Search endpoint called with q={q}, domain={domain}")
     
-    if q:
-        # Search by name
-        projects = await repo.search_by_name(q)
-    elif domain:
-        # Search by domain
-        projects = await repo.search_by_domain(domain)
-    else:
-        # Return empty list if no search criteria
-        projects = []
-    
-    return projects
+    try:
+        repo = ProjectRepository(db)
+        
+        if q:
+            # Search by name
+            projects = await repo.search_by_name(q)
+        elif domain:
+            # Search by domain
+            projects = await repo.search_by_domain(domain)
+        else:
+            # Return empty list if no search criteria
+            projects = []
+        
+        # Convert projects to dictionaries for JSON serialization
+        result = []
+        for project in projects:
+            result.append({
+                "id": str(project.id),
+                "name": project.name,
+                "description": project.description,
+                "email_domains": project.email_domains,
+                "is_active": project.is_active,
+                "auto_assign": project.auto_assign,
+                "created_at": project.created_at.isoformat() if project.created_at else None,
+                "updated_at": project.updated_at.isoformat() if project.updated_at else None
+            })
+        
+        return result
+    except Exception as e:
+        import traceback
+        print(f"Search endpoint error: {e}")
+        print(traceback.format_exc())
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error searching projects: {str(e)}"
+        )
 
 
 @project_search_router.post("/find-for-email")
