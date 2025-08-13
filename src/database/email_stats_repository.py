@@ -114,6 +114,8 @@ class EmailStatsRepository(BaseRepository[Email]):
             "unread_count": unread_count,
             "flagged_count": flagged_count,
             "draft_count": draft_count,
+            "thread_count": thread_count,
+            "sender_count": sender_count,
             "emails_by_project": emails_by_project,
             "emails_by_sender": emails_by_sender,
             "emails_by_date": emails_by_date,

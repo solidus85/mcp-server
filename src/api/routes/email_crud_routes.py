@@ -3,7 +3,7 @@ Email CRUD (Create, Read, Update, Delete) API endpoints
 """
 
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, Query, Body, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -113,8 +113,12 @@ async def search_emails_advanced(
     # Count total results
     total = await repo.count_search_results(filters)
     
+    # Convert to EmailResponse objects to ensure "from" field is included
+    # EmailResponse has a computed field "from_" with alias="from"
+    email_responses = [EmailResponse.model_validate(email) for email in emails]
+    
     return {
-        "results": emails,
+        "results": email_responses,
         "page": page,
         "size": size,
         "total": total
