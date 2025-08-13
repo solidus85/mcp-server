@@ -1,5 +1,5 @@
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, UTC
 from sqlalchemy import select, and_, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -115,7 +115,7 @@ class ProjectRepository(BaseRepository[Project]):
             project_id=project_id,
             person_id=person_id,
             role=role,
-            joined_at=datetime.utcnow()
+            joined_at=datetime.now(UTC)
         )
         await self.session.execute(stmt)
         await self.session.flush()

@@ -233,7 +233,7 @@ def test_project_data():
 @pytest.fixture
 def test_email_data():
     """Sample email data for testing."""
-    from datetime import datetime
+    from datetime import datetime, UTC
     
     return {
         "email_id": "test-msg-001",
@@ -243,7 +243,7 @@ def test_email_data():
         "subject": "Test Email Subject",
         "body": "<html><body><p>Test email body</p></body></html>",
         "body_text": "Test email body",
-        "datetime": datetime.utcnow().isoformat(),
+        "datetime": datetime.now(UTC).isoformat(),
         "headers": {"X-Test": "true"},
         "size_bytes": 1024
     }
@@ -338,18 +338,18 @@ class TestDataFactory:
     async def create_test_email(session: AsyncSession, sender=None, project=None, **kwargs):
         """Create a test email in the database."""
         from src.database.email_models import Email
-        from datetime import datetime
+        from datetime import datetime, UTC
         
         if not sender:
             sender = await TestDataFactory.create_test_person(session)
         
         data = {
-            "email_id": f"test-{datetime.utcnow().timestamp()}",
+            "email_id": f"test-{datetime.now(UTC).timestamp()}",
             "from_person_id": sender.id,
             "subject": "Test Email",
             "body": "<p>Test body</p>",
             "body_text": "Test body",
-            "datetime_sent": datetime.utcnow(),
+            "datetime_sent": datetime.now(UTC),
             "project_id": project.id if project else None,
             **kwargs
         }

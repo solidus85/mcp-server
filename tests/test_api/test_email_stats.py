@@ -5,7 +5,7 @@ Tests for email statistics endpoints
 import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 
 
 @pytest.mark.asyncio
@@ -74,7 +74,7 @@ class TestEmailStatistics:
     ):
         """Test getting email activity timeline"""
         # Create emails over time
-        base_date = datetime.utcnow()
+        base_date = datetime.now(UTC)
         
         for i in range(30):
             await test_factory.create_test_email(

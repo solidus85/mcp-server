@@ -1,5 +1,5 @@
 from typing import Optional, List, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 
 from sqlalchemy import select, and_, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -75,7 +75,7 @@ class ResourceRepository(BaseRepository[Resource]):
         resource = await self.get(resource_id)
         if resource:
             resource.access_count += 1
-            resource.last_accessed = datetime.utcnow()
+            resource.last_accessed = datetime.now(UTC)
             await self.session.flush()
 
 
@@ -107,7 +107,7 @@ class QueryRepository(BaseRepository[Query]):
         limit: int = 10
     ) -> List[Tuple[str, int]]:
         """Get popular queries in the last N days"""
-        cutoff = datetime.utcnow() - timedelta(days=days)
+        cutoff = datetime.now(UTC) - timedelta(days=days)
         
         stmt = (
             select(Query.query_text, func.count(Query.id).label("count"))
@@ -150,7 +150,7 @@ class AuditLogRepository(BaseRepository[AuditLog]):
         limit: int = 100
     ) -> List[AuditLog]:
         """Get user's recent activity"""
-        cutoff = datetime.utcnow() - timedelta(days=days)
+        cutoff = datetime.now(UTC) - timedelta(days=days)
         
         stmt = (
             select(AuditLog)

@@ -3,7 +3,7 @@ from fastapi import Depends, HTTPException, status, Header
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.security.utils import get_authorization_scheme_param
 from jose import JWTError, jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import logging
 
 from ..config import settings
@@ -60,9 +60,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     """Create a JWT access token"""
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.jwt_expiration_minutes)
+        expire = datetime.now(UTC) + timedelta(minutes=settings.jwt_expiration_minutes)
     
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(
@@ -163,7 +163,7 @@ class RateLimiter:
         limit = limit or settings.api_rate_limit
         window = window or settings.api_rate_limit_period
         
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         window_start = now - timedelta(seconds=window)
         
         # Clean old requests

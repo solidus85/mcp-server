@@ -1,5 +1,5 @@
 from typing import Optional, List, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 
 from sqlalchemy import select, and_, func, distinct
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -101,7 +101,7 @@ class EmailStatsRepository(BaseRepository[Email]):
             func.date(Email.datetime_sent).label("date"),
             func.count(Email.id).label("count")
         ).where(
-            Email.datetime_sent >= datetime.utcnow() - timedelta(days=7)
+            Email.datetime_sent >= datetime.now(UTC) - timedelta(days=7)
         ).group_by(func.date(Email.datetime_sent)).order_by(func.date(Email.datetime_sent))
         result = await self.session.execute(stmt)
         emails_by_date = [
@@ -152,7 +152,7 @@ class EmailStatsRepository(BaseRepository[Email]):
     
     async def get_activity_timeline(self, days: int = 30) -> List[Dict[str, Any]]:
         """Get email activity timeline for the last N days"""
-        end_date = datetime.utcnow()
+        end_date = datetime.now(UTC)
         start_date = end_date - timedelta(days=days)
         
         # Group emails by date

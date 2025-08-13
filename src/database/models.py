@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Optional, List, Dict, Any
 from uuid import uuid4
 import json
@@ -132,7 +132,7 @@ class ApiKey(Base, TimestampMixin):
         """Check if API key is expired"""
         if self.expires_at is None:
             return False
-        return datetime.utcnow() > self.expires_at
+        return datetime.now(UTC) > self.expires_at
 
 
 class Document(Base, TimestampMixin):
@@ -355,4 +355,4 @@ class Session(Base, TimestampMixin):
     @hybrid_property
     def is_expired(self) -> bool:
         """Check if session is expired"""
-        return datetime.utcnow() > self.expires_at
+        return datetime.now(UTC) > self.expires_at

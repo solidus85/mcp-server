@@ -1,5 +1,5 @@
 from typing import Optional, List, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import hashlib
 from uuid import uuid4
 
@@ -72,7 +72,7 @@ class ApiKeyRepository(BaseRepository[ApiKey]):
         # Calculate expiration
         expires_at = None
         if expires_in_days:
-            expires_at = datetime.utcnow() + timedelta(days=expires_in_days)
+            expires_at = datetime.now(UTC) + timedelta(days=expires_in_days)
         
         api_key = await self.create(
             user_id=user_id,
@@ -99,7 +99,7 @@ class ApiKeyRepository(BaseRepository[ApiKey]):
         
         # Update last used
         if api_key:
-            api_key.last_used = datetime.utcnow()
+            api_key.last_used = datetime.now(UTC)
             await self.session.flush()
         
         return api_key
@@ -124,7 +124,7 @@ class SessionRepository(BaseRepository[Session]):
     ) -> Session:
         """Create user session"""
         token_hash = hashlib.sha256(token.encode()).hexdigest()
-        expires_at = datetime.utcnow() + timedelta(minutes=expires_in_minutes)
+        expires_at = datetime.now(UTC) + timedelta(minutes=expires_in_minutes)
         
         return await self.create(
             user_id=user_id,
@@ -141,7 +141,7 @@ class SessionRepository(BaseRepository[Session]):
             and_(
                 Session.token_hash == token_hash,
                 Session.is_active == True,
-                Session.expires_at > datetime.utcnow()
+                Session.expires_at > datetime.now(UTC)
             )
         )
         result = await self.session.execute(stmt)
@@ -149,7 +149,7 @@ class SessionRepository(BaseRepository[Session]):
         
         # Update last activity
         if session:
-            session.last_activity = datetime.utcnow()
+            session.last_activity = datetime.now(UTC)
             await self.session.flush()
         
         return session
@@ -162,7 +162,7 @@ class SessionRepository(BaseRepository[Session]):
         """Clean up expired sessions"""
         stmt = (
             delete(Session)
-            .where(Session.expires_at < datetime.utcnow())
+            .where(Session.expires_at < datetime.now(UTC))
         )
         result = await self.session.execute(stmt)
         await self.session.flush()

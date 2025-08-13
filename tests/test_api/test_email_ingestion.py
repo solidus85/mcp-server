@@ -5,7 +5,7 @@ Tests for email ingestion endpoints
 import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 
 
 @pytest.mark.asyncio
@@ -58,7 +58,7 @@ class TestEmailIngestion:
             "subject": "Auto Assignment Test",
             "body": "Test body",
             "body_text": "Test body",
-            "datetime": datetime.utcnow().isoformat()
+            "datetime": datetime.now(UTC).isoformat()
         }
         
         response = await authenticated_client.post(
@@ -112,7 +112,7 @@ class TestEmailIngestion:
                 "subject": f"Bulk Email {i}",
                 "body": f"Body {i}",
                 "body_text": f"Body {i}",
-                "datetime": datetime.utcnow().isoformat()
+                "datetime": datetime.now(UTC).isoformat()
             })
         
         response = await authenticated_client.post(
@@ -140,7 +140,7 @@ class TestEmailIngestion:
             "subject": "Thread Test",
             "body": "Initial message",
             "body_text": "Initial message",
-            "datetime": datetime.utcnow().isoformat(),
+            "datetime": datetime.now(UTC).isoformat(),
             "thread_id": "thread-test-001"
         }
         
@@ -159,7 +159,7 @@ class TestEmailIngestion:
             "subject": "RE: Thread Test",
             "body": "Reply message",
             "body_text": "Reply message",
-            "datetime": (datetime.utcnow() + timedelta(hours=1)).isoformat(),
+            "datetime": (datetime.now(UTC) + timedelta(hours=1)).isoformat(),
             "thread_id": "thread-test-001",
             "in_reply_to": "thread-001"
         }
@@ -186,7 +186,7 @@ class TestEmailIngestion:
             "subject": "Email with Attachments",
             "body": "See attached",
             "body_text": "See attached",
-            "datetime": datetime.utcnow().isoformat(),
+            "datetime": datetime.now(UTC).isoformat(),
             "attachments": [
                 {
                     "filename": "document.pdf",
