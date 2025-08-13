@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
+from pydantic import BaseModel, EmailStr, Field, ConfigDict, model_validator, computed_field
 from enum import Enum
 
 
@@ -45,7 +45,6 @@ class PersonResponse(PersonBase):
     full_name: str
     created_at: datetime
     updated_at: datetime
-    projects: List["ProjectSummary"] = []
 
 
 class PersonSummary(BaseModel):
@@ -54,7 +53,12 @@ class PersonSummary(BaseModel):
     id: str
     email: EmailStr
     full_name: str
+    display_name: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     organization: Optional[str] = None
+    is_active: bool = True
+    is_external: bool = False
 
 
 # Project Schemas
@@ -175,6 +179,33 @@ class EmailResponse(EmailBase):
     sender: PersonSummary
     project: Optional[ProjectSummary] = None
     recipients: List[EmailRecipientResponse] = []
+    
+    # Computed fields for convenience
+    project_name: Optional[str] = None
+    has_attachments: bool = False
+    attachment_count: int = 0
+    from_: Optional[str] = Field(None, alias="from")
+    
+    @model_validator(mode='after')
+    def compute_fields(self):
+        """Compute derived fields after model initialization"""
+        # Set project_name from project object
+        if self.project and hasattr(self.project, 'name'):
+            self.project_name = self.project.name
+        
+        # Set from field from sender
+        if self.sender:
+            self.from_ = self.sender.email
+        
+        # Calculate attachment-related fields
+        if self.attachments:
+            self.has_attachments = len(self.attachments) > 0
+            self.attachment_count = len(self.attachments)
+        else:
+            self.has_attachments = False
+            self.attachment_count = 0
+        
+        return self
 
 
 class EmailSummary(BaseModel):
@@ -187,6 +218,7 @@ class EmailSummary(BaseModel):
     sender: PersonSummary
     is_read: bool
     is_flagged: bool
+    thread_id: Optional[str] = None
 
 
 # Email Thread Schemas
@@ -266,6 +298,26 @@ class EmailStatistics(BaseModel):
     emails_by_sender: List[Dict[str, Any]]
     emails_by_date: List[Dict[str, Any]]
     average_response_time: Optional[float] = None
+
+
+class PersonStatistics(BaseModel):
+    emails_sent: int
+    emails_received: int
+    projects_count: int
+    first_email_date: Optional[datetime] = None
+    last_email_date: Optional[datetime] = None
+
+
+# Pagination
+from typing import Generic, TypeVar
+T = TypeVar('T')
+
+class PaginatedResponse(BaseModel, Generic[T]):
+    items: List[T]
+    total: int
+    page: int
+    size: int
+    pages: Optional[int] = None
 
 
 class ProjectStatistics(BaseModel):

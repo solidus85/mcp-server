@@ -218,7 +218,7 @@ class TestAuthorizationEndpoints:
         
         if response.status_code == 404:
             # Try a known protected endpoint
-            response = await test_client.get("/api/v1/documents")
+            response = await test_client.get("/api/v1/documents/")
         
         assert response.status_code == 401
         data = response.json()
@@ -240,7 +240,7 @@ class TestAuthorizationEndpoints:
         )
         
         test_client.headers["Authorization"] = f"Bearer {expired_token}"
-        response = await test_client.get("/api/v1/documents")
+        response = await test_client.get("/api/v1/documents/")
         
         assert response.status_code == 401
         data = response.json()
@@ -249,7 +249,7 @@ class TestAuthorizationEndpoints:
     async def test_invalid_token_format(self, test_client: AsyncClient):
         """Test with invalid token format"""
         test_client.headers["Authorization"] = "Bearer invalid.token.here"
-        response = await test_client.get("/api/v1/documents")
+        response = await test_client.get("/api/v1/documents/")
         
         assert response.status_code == 401
         data = response.json()
@@ -283,7 +283,7 @@ class TestRateLimiting:
     async def test_rate_limit_not_exceeded(self, authenticated_client: AsyncClient):
         """Test requests within rate limit"""
         for i in range(5):
-            response = await authenticated_client.get("/api/v1/documents")
+            response = await authenticated_client.get("/api/v1/documents/")
             if response.status_code == 404:
                 pytest.skip("Documents endpoint not implemented")
             assert response.status_code in [200, 404]
@@ -293,7 +293,7 @@ class TestRateLimiting:
         # Make many rapid requests
         responses = []
         for i in range(100):
-            response = await authenticated_client.get("/api/v1/documents")
+            response = await authenticated_client.get("/api/v1/documents/")
             responses.append(response.status_code)
             
             if response.status_code == 429:
@@ -308,7 +308,7 @@ class TestRateLimiting:
     
     async def test_rate_limit_headers(self, authenticated_client: AsyncClient):
         """Test rate limit headers in response"""
-        response = await authenticated_client.get("/api/v1/documents")
+        response = await authenticated_client.get("/api/v1/documents/")
         
         # Check for rate limit headers
         headers = response.headers

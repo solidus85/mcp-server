@@ -99,17 +99,70 @@ class EmailSearchRepository(BaseRepository[Email]):
         sort_order: str = "desc"
     ) -> List[Email]:
         """Search emails with filters"""
-        return await self.search_emails(
-            query=filters.get("query"),
-            person_id=filters.get("person_id"),
-            project_id=filters.get("project_id"),
-            date_from=filters.get("date_from"),
-            date_to=filters.get("date_to"),
-            thread_id=filters.get("thread_id"),
-            filters=filters,
-            skip=offset,
-            limit=limit
+        stmt = select(Email).options(
+            selectinload(Email.sender),
+            selectinload(Email.recipients).selectinload(EmailRecipient.person),
+            selectinload(Email.project)
         )
+        
+        # Apply filters
+        conditions = []
+        
+        if filters.get("query"):
+            search_term = f"%{filters['query']}%"
+            conditions.append(
+                or_(
+                    Email.subject.ilike(search_term),
+                    Email.body_text.ilike(search_term)
+                )
+            )
+        
+        if filters.get("from_email"):
+            # Join with Person table to filter by sender email
+            stmt = stmt.join(Person, Email.from_person_id == Person.id)
+            conditions.append(func.lower(Person.email) == filters["from_email"].lower())
+        
+        if filters.get("to_email"):
+            # Filter by recipient email
+            subquery = (
+                select(EmailRecipient.email_id)
+                .join(Person, EmailRecipient.person_id == Person.id)
+                .where(func.lower(Person.email) == filters["to_email"].lower())
+            )
+            conditions.append(Email.id.in_(subquery))
+        
+        if filters.get("project_id"):
+            conditions.append(Email.project_id == filters["project_id"])
+        
+        if filters.get("date_from"):
+            conditions.append(Email.datetime_sent >= filters["date_from"])
+        
+        if filters.get("date_to"):
+            conditions.append(Email.datetime_sent <= filters["date_to"])
+        
+        if filters.get("thread_id"):
+            conditions.append(Email.thread_id == filters["thread_id"])
+        
+        if filters.get("is_read") is not None:
+            conditions.append(Email.is_read == filters["is_read"])
+        
+        if filters.get("is_flagged") is not None:
+            conditions.append(Email.is_flagged == filters["is_flagged"])
+        
+        if conditions:
+            stmt = stmt.where(and_(*conditions))
+        
+        # Apply sorting
+        sort_column = getattr(Email, sort_by, Email.datetime_sent)
+        if sort_order == "asc":
+            stmt = stmt.order_by(sort_column.asc())
+        else:
+            stmt = stmt.order_by(sort_column.desc())
+        
+        stmt = stmt.offset(offset).limit(limit)
+        
+        result = await self.session.execute(stmt)
+        return list(result.scalars().all())
     
     async def count_search_results(self, filters: Dict[str, Any]) -> int:
         """Count search results"""

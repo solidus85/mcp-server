@@ -10,8 +10,10 @@ import uvicorn
 from ..config import settings
 from ..utils import setup_logging
 from .middleware import setup_middleware
-from .base_routes import health_router, auth_router, tools_router, resources_router, vector_router
+from .base_routes import health_router, tools_router, resources_router, vector_router
 from .routes import email_router, person_router, project_router
+from .routes.auth_routes import auth_router
+from .routes.document_routes import document_router, protected_router, admin_router
 
 
 # Metrics
@@ -67,6 +69,9 @@ app.include_router(vector_router, prefix=f"{settings.api_prefix}/vectors")
 app.include_router(email_router, prefix=f"{settings.api_prefix}")
 app.include_router(person_router, prefix=f"{settings.api_prefix}")
 app.include_router(project_router, prefix=f"{settings.api_prefix}")
+app.include_router(document_router, prefix=f"{settings.api_prefix}")
+app.include_router(protected_router, prefix=f"{settings.api_prefix}")
+app.include_router(admin_router, prefix=f"{settings.api_prefix}")
 
 
 # Root endpoint

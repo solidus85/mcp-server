@@ -114,7 +114,8 @@ class EmailIngestionRepository(BaseRepository[Email]):
                 if hasattr(existing, key):
                     setattr(existing, key, value)
             await self.session.flush()
-            return existing
+            # Return the reloaded email with all relationships
+            return await self.get_by_email_id(email_id)
         
         # Get or create people
         person_repo = PersonRepository(self.session)

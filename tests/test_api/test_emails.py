@@ -279,7 +279,7 @@ class TestEmailRetrieval:
             )
         
         response = await authenticated_client.get(
-            "/api/v1/emails?page=1&size=5"
+            "/api/v1/emails/?page=1&size=5"
         )
         
         assert response.status_code == 200

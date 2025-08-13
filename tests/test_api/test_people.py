@@ -15,7 +15,7 @@ class TestPeopleEndpoints:
     async def test_create_person(self, authenticated_client: AsyncClient, test_person_data):
         """Test creating a new person"""
         response = await authenticated_client.post(
-            "/api/v1/people",
+            "/api/v1/people/",
             json=test_person_data
         )
         
@@ -45,7 +45,7 @@ class TestPeopleEndpoints:
         
         # Try to create another with same email
         response = await authenticated_client.post(
-            "/api/v1/people",
+            "/api/v1/people/",
             json={
                 "email": "duplicate@example.com",
                 "first_name": "Another",
@@ -125,7 +125,7 @@ class TestPeopleEndpoints:
                 first_name=f"Person{i}"
             )
         
-        response = await authenticated_client.get("/api/v1/people")
+        response = await authenticated_client.get("/api/v1/people/")
         
         assert response.status_code == 200
         data = response.json()
@@ -154,7 +154,7 @@ class TestPeopleEndpoints:
         
         # Get first page
         response = await authenticated_client.get(
-            "/api/v1/people?page=1&size=5"
+            "/api/v1/people/?page=1&size=5"
         )
         
         assert response.status_code == 200
@@ -185,7 +185,7 @@ class TestPeopleEndpoints:
         
         # Get only active people
         response = await authenticated_client.get(
-            "/api/v1/people?is_active=true"
+            "/api/v1/people/?is_active=true"
         )
         
         assert response.status_code == 200
@@ -215,7 +215,7 @@ class TestPeopleEndpoints:
         
         # Get only external people
         response = await authenticated_client.get(
-            "/api/v1/people?is_external=true"
+            "/api/v1/people/?is_external=true"
         )
         
         assert response.status_code == 200

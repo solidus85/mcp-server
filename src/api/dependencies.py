@@ -1,6 +1,7 @@
 from typing import Optional, Annotated
 from fastapi import Depends, HTTPException, status, Header
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security.utils import get_authorization_scheme_param
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 import logging
@@ -11,8 +12,8 @@ from ..vector.database import VectorDatabase
 from ..vector.search import VectorSearchEngine
 from ..utils import setup_logging
 
-# Security
-security = HTTPBearer()
+# Security - auto_error=False to return 401 instead of 403
+security = HTTPBearer(auto_error=False)
 
 # Logger
 logger = setup_logging("API.Dependencies")
@@ -72,8 +73,15 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     return encoded_jwt
 
 
-def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+def verify_token(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> dict:
     """Verify JWT token and return payload"""
+    if not credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
     token = credentials.credentials
     
     try:

@@ -80,9 +80,11 @@ async def test_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
 
 
 @pytest_asyncio.fixture(scope="function")
-async def test_client(test_session) -> AsyncGenerator[AsyncClient, None]:
+async def test_client(test_session, test_user_data) -> AsyncGenerator[AsyncClient, None]:
     """Create a test client for API testing."""
     from httpx import ASGITransport
+    from src.database.user_repository import UserRepository
+    from src.database.auth_repositories import RoleRepository
     
     # Override the database dependency
     from src.api.routes.base import get_db
@@ -91,6 +93,42 @@ async def test_client(test_session) -> AsyncGenerator[AsyncClient, None]:
         yield test_session
     
     app.dependency_overrides[get_db] = override_get_db
+    
+    # Create test user in database for login tests
+    user_repo = UserRepository(test_session)
+    role_repo = RoleRepository(test_session)
+    
+    # Create default roles
+    await role_repo.create_default_roles()
+    
+    # Create test user if not exists
+    existing_user = await user_repo.get_by_username(test_user_data["username"])
+    if not existing_user:
+        user = await user_repo.create_with_password(
+            username=test_user_data["username"],
+            email=test_user_data["email"],
+            password=test_user_data["password"],
+            full_name=test_user_data["full_name"]
+        )
+        await test_session.commit()
+        
+        # Add roles using direct SQL to avoid lazy loading issues
+        from src.database.models import user_roles
+        from sqlalchemy import insert
+        
+        # Add user role
+        user_role = await role_repo.get_by_name("user")
+        if user_role:
+            stmt = insert(user_roles).values(user_id=user.id, role_id=user_role.id)
+            await test_session.execute(stmt)
+        
+        # Add admin role
+        admin_role = await role_repo.get_by_name("admin")
+        if admin_role:
+            stmt = insert(user_roles).values(user_id=user.id, role_id=admin_role.id)
+            await test_session.execute(stmt)
+        
+        await test_session.commit()
     
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
@@ -101,14 +139,47 @@ async def test_client(test_session) -> AsyncGenerator[AsyncClient, None]:
 
 
 @pytest_asyncio.fixture(scope="function")
-async def authenticated_client(test_client: AsyncClient) -> AsyncClient:
+async def authenticated_client(test_client: AsyncClient, test_session: AsyncSession, test_user_data) -> AsyncClient:
     """Create an authenticated test client with a valid JWT token."""
     from src.api.dependencies import create_access_token
+    from src.database.user_repository import UserRepository
+    from src.database.auth_repositories import RoleRepository
+    
+    # Create test user in database
+    user_repo = UserRepository(test_session)
+    role_repo = RoleRepository(test_session)
+    
+    # Create default roles
+    await role_repo.create_default_roles()
+    
+    # User should already be created by test_client fixture
+    # Just verify it exists
+    existing_user = await user_repo.get_by_username(test_user_data["username"])
+    if not existing_user:
+        user = await user_repo.create_with_password(
+            username=test_user_data["username"],
+            email=test_user_data["email"],
+            password=test_user_data["password"],
+            full_name=test_user_data["full_name"]
+        )
+        await test_session.commit()
+        
+        # Add roles using direct SQL
+        from src.database.models import user_roles
+        from sqlalchemy import insert
+        
+        # Add admin role
+        admin_role = await role_repo.get_by_name("admin")
+        if admin_role:
+            stmt = insert(user_roles).values(user_id=user.id, role_id=admin_role.id)
+            await test_session.execute(stmt)
+        
+        await test_session.commit()
     
     # Create a test user token
     token_data = {
-        "sub": "testuser",
-        "email": "test@example.com",
+        "sub": test_user_data["username"],
+        "email": test_user_data["email"],
         "roles": ["user", "admin"]
     }
     token = create_access_token(token_data)
