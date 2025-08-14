@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Cache - MCP API Tester</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 p-8">
+    <div class="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Clear Browser Cache</h1>
+        
+        <p class="text-gray-600 dark:text-gray-400 mb-6">
+            Click the button below to clear all saved settings and return to defaults.
+        </p>
+        
+        <button onclick="clearAll()" class="w-full px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 mb-4">
+            🗑️ Clear All Settings
+        </button>
+        
+        <div id="status" class="hidden p-4 rounded bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"></div>
+        
+        <hr class="my-6 border-gray-200 dark:border-gray-700">
+        
+        <h2 class="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Current Settings:</h2>
+        <pre id="current-settings" class="bg-gray-100 dark:bg-gray-900 p-3 rounded text-sm text-gray-700 dark:text-gray-300"></pre>
+        
+        <div class="mt-6">
+            <a href="index.html" class="text-blue-500 hover:text-blue-600">← Back to API Tester</a>
+        </div>
+    </div>
+    
+    <script>
+        // Show current settings
+        function showSettings() {
+            const settings = {
+                baseUrl: localStorage.getItem('baseUrl') || 'Not set',
+                authToken: localStorage.getItem('authToken') ? 'Token saved' : 'No token',
+                theme: localStorage.getItem('theme') || 'Not set',
+                requestHistory: localStorage.getItem('requestHistory') ? 
+                    JSON.parse(localStorage.getItem('requestHistory')).length + ' requests' : 
+                    'No history'
+            };
+            document.getElementById('current-settings').textContent = JSON.stringify(settings, null, 2);
+        }
+        
+        // Clear all localStorage
+        function clearAll() {
+            localStorage.clear();
+            
+            // Set new defaults
+            localStorage.setItem('baseUrl', 'http://localhost:8010');
+            
+            const status = document.getElementById('status');
+            status.textContent = '✅ All settings cleared! Defaults restored. Redirecting...';
+            status.classList.remove('hidden');
+            
+            showSettings();
+            
+            // Redirect after 2 seconds
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 2000);
+        }
+        
+        // Show settings on load
+        showSettings();
+        
+        // Also provide console command
+        console.log('To clear cache from console, run: localStorage.clear()');
+    </script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 
 class APIClient {
     constructor() {
-        this.baseUrl = localStorage.getItem('baseUrl') || 'http://localhost:8000';
+        this.baseUrl = localStorage.getItem('baseUrl') || 'http://localhost:8010';
         this.token = localStorage.getItem('authToken') || null;
         this.history = JSON.parse(localStorage.getItem('requestHistory') || '[]');
     }

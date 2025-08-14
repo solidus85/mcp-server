@@ -592,9 +592,15 @@ async function updateAuthStatus() {
 // Update base URL from saved value
 function updateBaseUrl() {
     const savedUrl = localStorage.getItem('baseUrl');
-    if (savedUrl) {
+    // If the saved URL is the old default, update it to the new one
+    if (savedUrl === 'http://localhost:8000') {
+        localStorage.setItem('baseUrl', 'http://localhost:8010');
+        document.getElementById('base-url').value = 'http://localhost:8010';
+        apiClient.setBaseUrl('http://localhost:8010');
+    } else if (savedUrl) {
         document.getElementById('base-url').value = savedUrl;
     }
+    // If no saved URL, the HTML default (8010) will be used
 }
 
 // Test connection to server
