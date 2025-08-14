@@ -9,7 +9,7 @@ import os
 import webbrowser
 from pathlib import Path
 
-PORT = 8080
+PORT = 8090
 DIRECTORY = Path(__file__).parent
 
 class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
