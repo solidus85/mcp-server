@@ -28,8 +28,8 @@
                 <!-- Base URL Input -->
                 <div class="flex items-center space-x-2">
                     <label class="text-sm text-gray-600 dark:text-gray-400">Base URL:</label>
-                    <input type="text" id="base-url" value="http://localhost:8000" 
-                           class="px-3 py-1 text-sm border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    <input type="text" id="base-url" value="http://localhost:8010" 
+                           class="px-3 py-1 text-sm border rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                 </div>
                 
                 <!-- Auth Status -->
@@ -59,7 +59,7 @@
             <!-- Search -->
             <div class="p-4 border-b border-gray-200 dark:border-gray-700">
                 <input type="text" id="endpoint-search" placeholder="Search endpoints..." 
-                       class="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                       class="w-full px-3 py-2 border rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
             </div>
             
             <!-- Endpoints List -->
@@ -145,8 +145,8 @@
                                 <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Headers</h4>
                                 <div id="headers" class="space-y-2">
                                     <div class="flex space-x-2">
-                                        <input type="text" placeholder="Header name" class="flex-1 px-3 py-1 text-sm border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                        <input type="text" placeholder="Header value" class="flex-1 px-3 py-1 text-sm border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                        <input type="text" placeholder="Header name" class="flex-1 px-3 py-1 text-sm border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                        <input type="text" placeholder="Header value" class="flex-1 px-3 py-1 text-sm border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                                     </div>
                                 </div>
                                 <button id="add-header" class="mt-2 text-sm text-blue-500 hover:text-blue-600">+ Add header</button>
@@ -155,7 +155,7 @@
                             <!-- Request Body -->
                             <div id="body-section" class="hidden">
                                 <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Request Body (JSON)</h4>
-                                <textarea id="request-body" rows="10" class="w-full px-3 py-2 text-sm font-mono border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                                <textarea id="request-body" rows="10" class="w-full px-3 py-2 text-sm font-mono border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
                             </div>
                         </div>
 
@@ -207,16 +207,16 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
-                    <input type="text" id="auth-username" class="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    <input type="text" id="auth-username" class="w-full px-3 py-2 border rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
-                    <input type="password" id="auth-password" class="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    <input type="password" id="auth-password" class="w-full px-3 py-2 border rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                 </div>
                 
                 <div id="auth-token-section" class="hidden">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Or use JWT Token</label>
-                    <textarea id="auth-token" rows="3" class="w-full px-3 py-2 text-sm font-mono border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                    <textarea id="auth-token" rows="3" class="w-full px-3 py-2 text-sm font-mono border rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
                 </div>
             </div>
             

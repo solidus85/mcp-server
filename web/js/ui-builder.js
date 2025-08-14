@@ -122,7 +122,7 @@ class UIBuilder {
 
     // Build advanced input control with more types
     buildAdvancedInputControl(inputId, schema, param = {}) {
-        const baseClasses = 'w-full px-3 py-1 text-sm border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500';
+        const baseClasses = 'w-full px-3 py-1 text-sm border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500';
         
         // Handle arrays
         if (schema.type === 'array') {

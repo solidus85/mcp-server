@@ -342,7 +342,7 @@ function buildRequestBodyTemplate(endpointData) {
                 ${formHtml}
             </div>
             <div id="body-json-view">
-                <textarea id="request-body" rows="10" class="w-full px-3 py-2 text-sm font-mono border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                <textarea id="request-body" rows="10" class="w-full px-3 py-2 text-sm font-mono border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
             </div>
         `;
         
@@ -617,8 +617,8 @@ function addHeaderInput() {
     const newRow = document.createElement('div');
     newRow.className = 'flex space-x-2';
     newRow.innerHTML = `
-        <input type="text" placeholder="Header name" class="flex-1 px-3 py-1 text-sm border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-        <input type="text" placeholder="Header value" class="flex-1 px-3 py-1 text-sm border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+        <input type="text" placeholder="Header name" class="flex-1 px-3 py-1 text-sm border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+        <input type="text" placeholder="Header value" class="flex-1 px-3 py-1 text-sm border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
     `;
     container.appendChild(newRow);
 }

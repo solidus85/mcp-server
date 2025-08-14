@@ -98,7 +98,7 @@ class FormBuilder {
 
     // Build the appropriate input control based on schema
     buildInputControl(fieldId, schema, param = {}) {
-        const baseClasses = 'w-full px-3 py-1.5 text-sm border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400';
+        const baseClasses = 'w-full px-3 py-1.5 text-sm border rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400';
         
         // Handle enums
         if (schema.enum) {
