@@ -142,6 +142,21 @@ input:focus, textarea:focus, select:focus {
     border-color: #3b82f6;
 }
 
+/* Light mode input styles - default text color */
+input[type="text"], 
+input[type="password"], 
+input[type="email"], 
+input[type="number"], 
+input[type="url"], 
+input[type="search"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+textarea, 
+select {
+    color: #111827; /* text-gray-900 */
+}
+
 /* Dark mode adjustments */
 .dark input, .dark textarea, .dark select {
     background-color: #374151;
