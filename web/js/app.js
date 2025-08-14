@@ -199,7 +199,7 @@ function updateEndpointInfo(path, method, data) {
     document.getElementById('operation-id').textContent = data.operationId || 'N/A';
 }
 
-// Build parameter inputs for current endpoint
+// Build parameter inputs for current endpoint with validation
 function buildParameterInputs(endpointData) {
     // Path parameters
     const pathParams = endpointData.parameters?.filter(p => p.in === 'path') || [];
@@ -209,6 +209,8 @@ function buildParameterInputs(endpointData) {
     if (pathParams.length > 0) {
         pathSection.classList.remove('hidden');
         pathContainer.innerHTML = uiBuilder.buildParameterInputs(pathParams, 'path');
+        // Add real-time validation
+        addValidationListeners(pathParams, 'path');
     } else {
         pathSection.classList.add('hidden');
     }
@@ -221,6 +223,8 @@ function buildParameterInputs(endpointData) {
     if (queryParams.length > 0) {
         querySection.classList.remove('hidden');
         queryContainer.innerHTML = uiBuilder.buildParameterInputs(queryParams, 'query');
+        // Add real-time validation
+        addValidationListeners(queryParams, 'query');
     } else {
         querySection.classList.add('hidden');
     }
@@ -229,28 +233,187 @@ function buildParameterInputs(endpointData) {
     const bodySection = document.getElementById('body-section');
     if (['POST', 'PUT', 'PATCH'].includes(currentEndpoint.method)) {
         bodySection.classList.remove('hidden');
+        // Add JSON validation for body
+        addBodyValidation();
     } else {
         bodySection.classList.add('hidden');
     }
 }
 
-// Build request body template
+// Add validation listeners to parameter inputs
+function addValidationListeners(parameters, type) {
+    if (!window.formBuilder) return;
+    
+    parameters.forEach(param => {
+        const inputId = `${type}-${param.name}`;
+        const input = document.getElementById(inputId);
+        
+        if (input) {
+            // Add validation on blur
+            input.addEventListener('blur', () => {
+                const value = input.type === 'checkbox' ? input.checked : input.value;
+                const validation = window.formBuilder.validateField(inputId, value);
+                
+                if (!validation.valid) {
+                    window.formBuilder.showFieldError(input, validation.errors[0]);
+                } else {
+                    window.formBuilder.clearFieldError(input);
+                }
+            });
+            
+            // Clear error on focus
+            input.addEventListener('focus', () => {
+                window.formBuilder.clearFieldError(input);
+            });
+        }
+    });
+}
+
+// Add JSON validation for request body
+function addBodyValidation() {
+    const bodyInput = document.getElementById('request-body');
+    if (!bodyInput) return;
+    
+    let validationTimeout;
+    
+    bodyInput.addEventListener('input', () => {
+        clearTimeout(validationTimeout);
+        validationTimeout = setTimeout(() => {
+            try {
+                if (bodyInput.value.trim()) {
+                    JSON.parse(bodyInput.value);
+                    bodyInput.classList.remove('border-red-500');
+                    bodyInput.classList.add('border-green-500');
+                }
+            } catch (e) {
+                bodyInput.classList.remove('border-green-500');
+                bodyInput.classList.add('border-red-500');
+                
+                // Show error message
+                let errorDiv = bodyInput.parentElement.querySelector('.json-error');
+                if (!errorDiv) {
+                    errorDiv = document.createElement('div');
+                    errorDiv.className = 'json-error text-xs text-red-500 mt-1';
+                    bodyInput.parentElement.appendChild(errorDiv);
+                }
+                errorDiv.textContent = `JSON Error: ${e.message}`;
+            }
+        }, 500);
+    });
+    
+    // Clear validation on focus
+    bodyInput.addEventListener('focus', () => {
+        bodyInput.classList.remove('border-red-500', 'border-green-500');
+        const errorDiv = bodyInput.parentElement.querySelector('.json-error');
+        if (errorDiv) errorDiv.remove();
+    });
+}
+
+// Build request body template with enhanced form option
 function buildRequestBodyTemplate(endpointData) {
     if (!endpointData.requestBody) return;
     
+    const bodySection = document.getElementById('body-section');
+    if (!bodySection) return;
+    
+    // Check if we should use form builder for complex schemas
+    const content = endpointData.requestBody.content?.['application/json'];
+    const schema = content?.schema;
+    
+    if (schema && window.formBuilder) {
+        // Add toggle for form vs JSON view
+        const toggleHtml = `
+            <div class="flex items-center justify-between mb-2">
+                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Request Body</h4>
+                <div class="flex items-center space-x-2">
+                    <button type="button" id="body-view-form" class="px-2 py-1 text-xs bg-blue-500 text-white rounded">Form</button>
+                    <button type="button" id="body-view-json" class="px-2 py-1 text-xs bg-gray-300 text-gray-700 rounded">JSON</button>
+                </div>
+            </div>
+        `;
+        
+        // Build form view
+        const formHtml = window.formBuilder.buildRequestBodySection(endpointData.requestBody, openApiSpec.components?.schemas || {});
+        
+        // Update body section
+        bodySection.innerHTML = `
+            ${toggleHtml}
+            <div id="body-form-view" class="hidden">
+                ${formHtml}
+            </div>
+            <div id="body-json-view">
+                <textarea id="request-body" rows="10" class="w-full px-3 py-2 text-sm font-mono border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+            </div>
+        `;
+        
+        // Add toggle listeners
+        document.getElementById('body-view-form')?.addEventListener('click', () => {
+            document.getElementById('body-form-view').classList.remove('hidden');
+            document.getElementById('body-json-view').classList.add('hidden');
+            document.getElementById('body-view-form').classList.add('bg-blue-500', 'text-white');
+            document.getElementById('body-view-form').classList.remove('bg-gray-300', 'text-gray-700');
+            document.getElementById('body-view-json').classList.remove('bg-blue-500', 'text-white');
+            document.getElementById('body-view-json').classList.add('bg-gray-300', 'text-gray-700');
+        });
+        
+        document.getElementById('body-view-json')?.addEventListener('click', () => {
+            // Convert form data to JSON
+            const formData = window.formBuilder.getFormData('body-form');
+            if (Object.keys(formData).length > 0) {
+                document.getElementById('request-body').value = JSON.stringify(formData, null, 2);
+            }
+            
+            document.getElementById('body-form-view').classList.add('hidden');
+            document.getElementById('body-json-view').classList.remove('hidden');
+            document.getElementById('body-view-json').classList.add('bg-blue-500', 'text-white');
+            document.getElementById('body-view-json').classList.remove('bg-gray-300', 'text-gray-700');
+            document.getElementById('body-view-form').classList.remove('bg-blue-500', 'text-white');
+            document.getElementById('body-view-form').classList.add('bg-gray-300', 'text-gray-700');
+        });
+    }
+    
+    // Build template
     const template = uiBuilder.buildRequestBodyTemplate(
         endpointData.requestBody,
         openApiSpec.components?.schemas || {}
     );
     
     if (template) {
-        document.getElementById('request-body').value = JSON.stringify(template, null, 2);
+        const bodyTextarea = document.getElementById('request-body');
+        if (bodyTextarea) {
+            bodyTextarea.value = JSON.stringify(template, null, 2);
+        }
     }
 }
 
-// Execute the current request
+// Execute the current request with validation
 async function executeRequest() {
     if (!currentEndpoint) return;
+    
+    // Validate form if using form builder
+    if (window.formBuilder) {
+        const pathParams = currentEndpoint.data.parameters?.filter(p => p.in === 'path') || [];
+        const queryParams = currentEndpoint.data.parameters?.filter(p => p.in === 'query') || [];
+        
+        // Validate all parameters
+        let hasErrors = false;
+        [...pathParams, ...queryParams].forEach(param => {
+            const inputId = `${param.in}-${param.name}`;
+            const input = document.getElementById(inputId);
+            if (input && param.required) {
+                const value = input.type === 'checkbox' ? input.checked : input.value;
+                if (!value || value === '') {
+                    window.formBuilder.showFieldError(input, 'This field is required');
+                    hasErrors = true;
+                }
+            }
+        });
+        
+        if (hasErrors) {
+            alert('Please fix validation errors before executing');
+            return;
+        }
+    }
     
     const btn = document.getElementById('execute-btn');
     btn.disabled = true;
@@ -280,12 +443,21 @@ async function executeRequest() {
         // Get body
         let body = null;
         if (['POST', 'PUT', 'PATCH'].includes(currentEndpoint.method)) {
-            const bodyText = document.getElementById('request-body').value;
-            if (bodyText) {
-                try {
-                    body = JSON.parse(bodyText);
-                } catch (e) {
-                    body = bodyText; // Send as plain text if not valid JSON
+            // Check if form view is active
+            const formView = document.getElementById('body-form-view');
+            if (formView && !formView.classList.contains('hidden')) {
+                // Get data from form
+                body = window.formBuilder.getFormData('body-form');
+            } else {
+                // Get data from JSON textarea
+                const bodyText = document.getElementById('request-body')?.value;
+                if (bodyText) {
+                    try {
+                        body = JSON.parse(bodyText);
+                    } catch (e) {
+                        alert('Invalid JSON in request body');
+                        throw e;
+                    }
                 }
             }
         }

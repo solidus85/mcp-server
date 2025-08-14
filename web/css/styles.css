@@ -222,6 +222,226 @@ input:focus, textarea:focus, select:focus {
     z-index: 10;
 }
 
+/* Validation styles */
+input.border-red-500, 
+textarea.border-red-500, 
+select.border-red-500 {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2;
+}
+
+.dark input.border-red-500,
+.dark textarea.border-red-500,
+.dark select.border-red-500 {
+    background-color: #7f1d1d;
+}
+
+input.border-green-500,
+textarea.border-green-500,
+select.border-green-500 {
+    border-color: #10b981 !important;
+    background-color: #f0fdf4;
+}
+
+.dark input.border-green-500,
+.dark textarea.border-green-500,
+.dark select.border-green-500 {
+    background-color: #14532d;
+}
+
+/* Field error messages */
+.field-error {
+    color: #ef4444;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+/* JSON error messages */
+.json-error {
+    color: #ef4444;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+/* Array control styles */
+.array-control {
+    padding: 0.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    background-color: #f9fafb;
+}
+
+.dark .array-control {
+    border-color: #4b5563;
+    background-color: #1f2937;
+}
+
+.array-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.array-item button {
+    flex-shrink: 0;
+}
+
+/* Object control styles */
+.object-control {
+    margin-top: 0.5rem;
+    padding-left: 1rem;
+    border-left: 2px solid #d1d5db;
+}
+
+.dark .object-control {
+    border-left-color: #4b5563;
+}
+
+/* Enhanced switch toggle */
+input[type="checkbox"].sr-only:checked + div {
+    background-color: #3b82f6;
+}
+
+input[type="checkbox"].sr-only:focus + div {
+    ring: 4px;
+    ring-color: #93bbfc;
+}
+
+/* Date/time input styling */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+    color-scheme: light;
+}
+
+.dark input[type="date"],
+.dark input[type="time"],
+.dark input[type="datetime-local"] {
+    color-scheme: dark;
+}
+
+/* File input styling */
+input[type="file"] {
+    padding: 0.25rem;
+}
+
+input[type="file"]::-webkit-file-upload-button {
+    padding: 0.25rem 0.75rem;
+    margin-right: 0.5rem;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+
+input[type="file"]::-webkit-file-upload-button:hover {
+    background-color: #2563eb;
+}
+
+/* Multi-select styling */
+select[multiple] {
+    padding: 0.5rem;
+}
+
+select[multiple] option {
+    padding: 0.25rem 0.5rem;
+}
+
+select[multiple] option:checked {
+    background-color: #3b82f6;
+    color: white;
+}
+
+/* Radio button group styling */
+input[type="radio"] {
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #d1d5db;
+    border-radius: 50%;
+    background-color: white;
+    cursor: pointer;
+}
+
+input[type="radio"]:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+input[type="radio"]:checked::after {
+    content: '';
+    display: block;
+    width: 0.375rem;
+    height: 0.375rem;
+    margin: 0.1875rem;
+    background-color: white;
+    border-radius: 50%;
+}
+
+.dark input[type="radio"] {
+    background-color: #374151;
+    border-color: #4b5563;
+}
+
+/* Form/JSON toggle buttons */
+#body-view-form,
+#body-view-json {
+    transition: all 0.2s ease;
+}
+
+/* Nested field styling */
+.nested-field {
+    padding: 0.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.25rem;
+    background-color: #fafafa;
+}
+
+.dark .nested-field {
+    border-color: #4b5563;
+    background-color: #1a1a1a;
+}
+
+/* Parameter section styling */
+.parameter-section {
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background-color: white;
+    margin-bottom: 1rem;
+}
+
+.dark .parameter-section {
+    border-color: #4b5563;
+    background-color: #1f2937;
+}
+
+/* Focus states for enhanced inputs */
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    ring: 2px;
+    ring-offset: 2px;
+    ring-color: #3b82f6;
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+    ring-offset-color: #111827;
+}
+
+/* Loading state for inputs */
+input.loading,
+textarea.loading,
+select.loading {
+    opacity: 0.5;
+    cursor: wait;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     aside {

@@ -77,12 +77,23 @@ class UIBuilder {
         return path.replace('/api/v1', '').replace(/{([^}]+)}/g, ':$1');
     }
 
-    // Build parameter inputs
+    // Build parameter inputs with enhanced form builder
     buildParameterInputs(parameters, type) {
         if (!parameters || parameters.length === 0) {
             return '';
         }
         
+        // Use the enhanced form builder if available
+        if (window.formBuilder) {
+            let html = '<div class="space-y-3">';
+            parameters.forEach(param => {
+                html += window.formBuilder.buildParameterField(param, type);
+            });
+            html += '</div>';
+            return html;
+        }
+        
+        // Fallback to original implementation
         let html = '';
         parameters.forEach(param => {
             const required = param.required ? '<span class="text-red-500">*</span>' : '';
@@ -102,61 +113,220 @@ class UIBuilder {
             `;
             
             // Build appropriate input based on type
-            if (schema.enum) {
-                // Dropdown for enum values
-                html += `
-                    <select id="${inputId}" class="w-full px-3 py-1 text-sm border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                        <option value="">-- Select --</option>
-                        ${schema.enum.map(val => `<option value="${val}">${val}</option>`).join('')}
-                    </select>
-                `;
-            } else if (schema.type === 'boolean') {
-                // Checkbox for boolean
-                html += `
-                    <input type="checkbox" id="${inputId}" class="checkbox">
-                `;
-            } else if (schema.type === 'integer' || schema.type === 'number') {
-                // Number input
-                html += `
-                    <input type="number" id="${inputId}" 
-                           placeholder="${schema.example || ''}"
-                           ${schema.minimum ? `min="${schema.minimum}"` : ''}
-                           ${schema.maximum ? `max="${schema.maximum}"` : ''}
-                           class="w-full px-3 py-1 text-sm border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                `;
-            } else {
-                // Text input (default)
-                html += `
-                    <input type="text" id="${inputId}" 
-                           placeholder="${schema.example || param.example || ''}"
-                           class="w-full px-3 py-1 text-sm border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                `;
-            }
-            
+            html += this.buildAdvancedInputControl(inputId, schema, param);
             html += '</div>';
         });
         
         return html;
     }
 
-    // Build request body template
+    // Build advanced input control with more types
+    buildAdvancedInputControl(inputId, schema, param = {}) {
+        const baseClasses = 'w-full px-3 py-1 text-sm border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500';
+        
+        // Handle arrays
+        if (schema.type === 'array') {
+            if (schema.items?.enum) {
+                // Multi-select for enum arrays
+                return `
+                    <select id="${inputId}" multiple size="4" class="${baseClasses}">
+                        ${schema.items.enum.map(val => `<option value="${val}">${val}</option>`).join('')}
+                    </select>
+                    <div class="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple</div>
+                `;
+            }
+            // Simple array input (comma-separated)
+            return `
+                <input type="text" id="${inputId}" 
+                       placeholder="Enter values separated by commas"
+                       class="${baseClasses}">
+                <div class="text-xs text-gray-500 mt-1">Separate values with commas</div>
+            `;
+        }
+        
+        // Handle enums
+        if (schema.enum) {
+            if (schema.enum.length <= 4) {
+                // Radio buttons for small enums
+                let html = '<div class="flex flex-wrap gap-3">';
+                schema.enum.forEach((val, i) => {
+                    html += `
+                        <label class="flex items-center">
+                            <input type="radio" name="${inputId}" value="${val}" 
+                                   ${i === 0 ? 'checked' : ''}
+                                   class="mr-2 text-blue-500">
+                            <span class="text-sm">${val}</span>
+                        </label>
+                    `;
+                });
+                html += '</div>';
+                return html;
+            }
+            // Dropdown for larger enums
+            return `
+                <select id="${inputId}" class="${baseClasses}">
+                    <option value="">-- Select --</option>
+                    ${schema.enum.map(val => `<option value="${val}">${val}</option>`).join('')}
+                </select>
+            `;
+        }
+        
+        // Handle booleans
+        if (schema.type === 'boolean') {
+            return `
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="${inputId}" class="sr-only peer">
+                    <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-blue-600 peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 dark:bg-gray-700 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+                </label>
+            `;
+        }
+        
+        // Handle numbers
+        if (schema.type === 'integer' || schema.type === 'number') {
+            const step = schema.type === 'integer' ? '1' : 'any';
+            return `
+                <input type="number" id="${inputId}" 
+                       step="${step}"
+                       placeholder="${schema.example || schema.default || ''}"
+                       ${schema.minimum !== undefined ? `min="${schema.minimum}"` : ''}
+                       ${schema.maximum !== undefined ? `max="${schema.maximum}"` : ''}
+                       class="${baseClasses}">
+            `;
+        }
+        
+        // Handle strings with formats
+        if (schema.type === 'string') {
+            const format = schema.format;
+            
+            switch(format) {
+                case 'date-time':
+                    return `<input type="datetime-local" id="${inputId}" class="${baseClasses}">`;
+                case 'date':
+                    return `<input type="date" id="${inputId}" class="${baseClasses}">`;
+                case 'time':
+                    return `<input type="time" id="${inputId}" class="${baseClasses}">`;
+                case 'email':
+                    return `<input type="email" id="${inputId}" placeholder="user@example.com" class="${baseClasses}">`;
+                case 'uri':
+                case 'url':
+                    return `<input type="url" id="${inputId}" placeholder="https://example.com" class="${baseClasses}">`;
+                case 'uuid':
+                    return `
+                        <input type="text" id="${inputId}" 
+                               pattern="[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                               placeholder="00000000-0000-0000-0000-000000000000"
+                               class="${baseClasses}">
+                    `;
+                case 'password':
+                    return `<input type="password" id="${inputId}" class="${baseClasses}">`;
+                default:
+                    // Check for long text
+                    if (schema.maxLength && schema.maxLength > 100) {
+                        return `
+                            <textarea id="${inputId}" rows="3" 
+                                      placeholder="${schema.example || param.example || ''}"
+                                      ${schema.maxLength ? `maxlength="${schema.maxLength}"` : ''}
+                                      class="${baseClasses}"></textarea>
+                        `;
+                    }
+                    // Regular text input
+                    return `
+                        <input type="text" id="${inputId}" 
+                               placeholder="${schema.example || param.example || ''}"
+                               ${schema.pattern ? `pattern="${schema.pattern}"` : ''}
+                               ${schema.minLength ? `minlength="${schema.minLength}"` : ''}
+                               ${schema.maxLength ? `maxlength="${schema.maxLength}"` : ''}
+                               class="${baseClasses}">
+                    `;
+            }
+        }
+        
+        // Default to text input
+        return `
+            <input type="text" id="${inputId}" 
+                   placeholder="${schema.example || param.example || ''}"
+                   class="${baseClasses}">
+        `;
+    }
+
+    // Build request body template with enhanced schema resolution
     buildRequestBodyTemplate(requestBody, schemas) {
-        if (!requestBody || !requestBody.content || !requestBody.content['application/json']) {
+        if (!requestBody || !requestBody.content) {
             return null;
         }
         
-        const schema = requestBody.content['application/json'].schema;
-        if (!schema) return null;
+        // Try different content types
+        const contentTypes = ['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data'];
+        let content = null;
+        let contentType = null;
+        
+        for (const type of contentTypes) {
+            if (requestBody.content[type]) {
+                content = requestBody.content[type];
+                contentType = type;
+                break;
+            }
+        }
+        
+        if (!content || !content.schema) return null;
+        
+        const schema = content.schema;
         
         // Resolve schema reference if needed
-        let resolvedSchema = schema;
-        if (schema.$ref) {
-            const schemaName = schema.$ref.split('/').pop();
-            resolvedSchema = schemas[schemaName] || {};
-        }
+        let resolvedSchema = this.resolveSchemaRef(schema, schemas);
         
         // Build example object
         return this.buildExampleFromSchema(resolvedSchema, schemas);
+    }
+
+    // Resolve schema references including oneOf, anyOf, allOf
+    resolveSchemaRef(schema, schemas) {
+        if (!schema) return {};
+        
+        // Handle $ref
+        if (schema.$ref) {
+            const schemaName = schema.$ref.split('/').pop();
+            return this.resolveSchemaRef(schemas[schemaName], schemas);
+        }
+        
+        // Handle oneOf - use first option
+        if (schema.oneOf && schema.oneOf.length > 0) {
+            return this.resolveSchemaRef(schema.oneOf[0], schemas);
+        }
+        
+        // Handle anyOf - use first option
+        if (schema.anyOf && schema.anyOf.length > 0) {
+            return this.resolveSchemaRef(schema.anyOf[0], schemas);
+        }
+        
+        // Handle allOf - merge all schemas
+        if (schema.allOf && schema.allOf.length > 0) {
+            let merged = {};
+            schema.allOf.forEach(s => {
+                const resolved = this.resolveSchemaRef(s, schemas);
+                merged = this.mergeSchemas(merged, resolved);
+            });
+            return merged;
+        }
+        
+        return schema;
+    }
+
+    // Merge two schemas
+    mergeSchemas(schema1, schema2) {
+        const merged = { ...schema1 };
+        
+        Object.keys(schema2).forEach(key => {
+            if (key === 'properties' && merged.properties) {
+                merged.properties = { ...merged.properties, ...schema2.properties };
+            } else if (key === 'required' && merged.required) {
+                merged.required = [...new Set([...merged.required, ...schema2.required])];
+            } else {
+                merged[key] = schema2[key];
+            }
+        });
+        
+        return merged;
     }
 
     // Build example object from schema
@@ -218,7 +388,7 @@ class UIBuilder {
         return null;
     }
 
-    // Get parameter values from inputs
+    // Get parameter values from inputs with enhanced type handling
     getParameterValues(parameters, type) {
         const values = {};
         
@@ -227,19 +397,43 @@ class UIBuilder {
         parameters.forEach(param => {
             const inputId = `${type}-${param.name}`;
             const input = document.getElementById(inputId);
+            const schema = param.schema || {};
             
             if (input) {
                 let value;
                 
+                // Handle different input types
                 if (input.type === 'checkbox') {
                     value = input.checked;
+                } else if (input.type === 'radio') {
+                    // For radio buttons, find the checked one
+                    const checked = document.querySelector(`input[name="${inputId}"]:checked`);
+                    value = checked ? checked.value : null;
                 } else if (input.type === 'number') {
                     value = input.value ? Number(input.value) : null;
+                } else if (input.tagName === 'SELECT' && input.multiple) {
+                    // Handle multi-select
+                    value = Array.from(input.selectedOptions).map(opt => opt.value);
+                } else if (input.type === 'datetime-local' || input.type === 'date' || input.type === 'time') {
+                    // Handle date/time inputs
+                    value = input.value || null;
+                    if (value && schema.format === 'date-time') {
+                        // Convert to ISO string
+                        value = new Date(value).toISOString();
+                    }
+                } else if (input.type === 'file') {
+                    // Handle file inputs
+                    value = input.files[0] || null;
                 } else {
                     value = input.value || null;
+                    
+                    // Handle array inputs (comma-separated)
+                    if (schema.type === 'array' && typeof value === 'string' && value.includes(',')) {
+                        value = value.split(',').map(v => v.trim()).filter(v => v);
+                    }
                 }
                 
-                if (value !== null && value !== '') {
+                if (value !== null && value !== '' && (!Array.isArray(value) || value.length > 0)) {
                     values[param.name] = value;
                 }
             }
