@@ -31,8 +31,11 @@ async def create_test_user():
     # Initialize database
     await init_database()
     
-    # Get session
-    async for session in get_db_session():
+    # Use async generator properly with async with
+    from src.database.connection import DatabaseManager
+    db_manager = DatabaseManager()
+    
+    async with db_manager.get_session() as session:
         try:
             # Check if user already exists
             result = await session.execute(
@@ -64,15 +67,12 @@ async def create_test_user():
             logger.info(f"   Email: {settings.test_email}")
             logger.info(f"   Is Admin: {settings.test_is_admin}")
             
-            # Exit the async for loop
-            break
+            return True
             
         except Exception as e:
             logger.error(f"Error creating test user: {e}")
             await session.rollback()
             return False
-    
-    return True
 
 
 async def main():
@@ -80,18 +80,25 @@ async def main():
     logger.info("Initializing test user...")
     logger.info(f"Database URL: {settings.database_url}")
     
-    success = await create_test_user()
-    
-    if success:
-        logger.info("\n" + "="*50)
-        logger.info("Test user is ready for use!")
-        logger.info("You can now login with:")
-        logger.info(f"  Username: {settings.test_username}")
-        logger.info(f"  Password: {settings.test_password}")
-        logger.info("="*50)
-    else:
-        logger.error("Failed to create test user")
-        sys.exit(1)
+    try:
+        success = await create_test_user()
+        
+        if success:
+            logger.info("\n" + "="*50)
+            logger.info("Test user is ready for use!")
+            logger.info("You can now login with:")
+            logger.info(f"  Username: {settings.test_username}")
+            logger.info(f"  Password: {settings.test_password}")
+            logger.info("="*50)
+        else:
+            logger.error("Failed to create test user")
+            sys.exit(1)
+    finally:
+        # Ensure proper cleanup
+        from src.database.connection import close_database
+        await close_database()
+        # Give a moment for async tasks to complete
+        await asyncio.sleep(0.1)
 
 
 if __name__ == "__main__":
