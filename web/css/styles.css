@@ -134,15 +134,7 @@ pre[class*="language-"] {
     transform: rotate(90deg);
 }
 
-/* Input focus styles */
-input:focus, textarea:focus, select:focus {
-    outline: none;
-    ring: 2px;
-    ring-color: #3b82f6;
-    border-color: #3b82f6;
-}
-
-/* Light mode input styles - default text color */
+/* Light mode input styles - explicit colors and backgrounds */
 input[type="text"], 
 input[type="password"], 
 input[type="email"], 
@@ -154,14 +146,33 @@ input[type="time"],
 input[type="datetime-local"],
 textarea, 
 select {
-    color: #111827; /* text-gray-900 */
+    color: #111827 !important; /* text-gray-900 */
+    background-color: white !important;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Input focus styles with proper box-shadow */
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 /* Dark mode adjustments */
-.dark input, .dark textarea, .dark select {
-    background-color: #374151;
+.dark input[type="text"],
+.dark input[type="password"],
+.dark input[type="email"],
+.dark input[type="number"],
+.dark input[type="url"],
+.dark input[type="search"],
+.dark input[type="date"],
+.dark input[type="time"],
+.dark input[type="datetime-local"],
+.dark textarea,
+.dark select {
+    background-color: #374151 !important;
     border-color: #4b5563;
-    color: white;
+    color: white !important;
 }
 
 .dark input::placeholder, .dark textarea::placeholder {
@@ -446,20 +457,12 @@ input[type="radio"]:checked::after {
     background-color: #1f2937;
 }
 
-/* Focus states for enhanced inputs */
-input:focus,
-textarea:focus,
-select:focus {
-    outline: none;
-    ring: 2px;
-    ring-offset: 2px;
-    ring-color: #3b82f6;
-}
-
+/* Enhanced focus states with dark mode support */
 .dark input:focus,
 .dark textarea:focus,
 .dark select:focus {
-    ring-offset-color: #111827;
+    border-color: #60a5fa !important;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
 }
 
 /* Loading state for inputs */

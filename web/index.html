@@ -7,14 +7,41 @@
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <style type="text/tailwindcss">
+        @layer base {
+            /* Override Tailwind's base input styles */
+            input[type="text"],
+            input[type="password"],
+            input[type="email"],
+            input[type="number"],
+            input[type="url"],
+            input[type="search"],
+            textarea,
+            select {
+                background-color: white;
+                color: #111827;
+            }
+        }
+    </style>
     
     <!-- Prism for JSON syntax highlighting -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
     
-    <!-- Custom styles -->
+    <!-- Custom styles - loaded last for highest priority -->
     <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Final overrides to ensure visibility */
+        #base-url {
+            background-color: white !important;
+            color: #111827 !important;
+        }
+        .dark #base-url {
+            background-color: #374151 !important;
+            color: white !important;
+        }
+    </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900">
     <!-- Header -->
