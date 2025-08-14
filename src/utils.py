@@ -10,6 +10,12 @@ import time
 import asyncio
 from logging.handlers import RotatingFileHandler
 from pythonjsonlogger.json import JsonFormatter
+from passlib.context import CryptContext
+import secrets
+import string
+
+# Password hashing context
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def setup_logging(
@@ -213,3 +219,25 @@ def validate_api_key(api_key: Optional[str], provider: str) -> bool:
 
     # Default: just check if key is not empty
     return len(api_key) > 0
+
+
+def get_password_hash(password: str) -> str:
+    """Hash a password using bcrypt"""
+    return pwd_context.hash(password)
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify a password against its hash"""
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def generate_random_password(length: int = 12) -> str:
+    """Generate a random password"""
+    alphabet = string.ascii_letters + string.digits + string.punctuation
+    password = ''.join(secrets.choice(alphabet) for _ in range(length))
+    return password
+
+
+def generate_api_key() -> str:
+    """Generate a random API key"""
+    return secrets.token_urlsafe(32)

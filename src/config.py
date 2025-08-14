@@ -80,6 +80,23 @@ class Settings(BaseSettings):
     enable_metrics: bool = Field(default=True, description="Enable metrics")
     metrics_port: int = Field(default=9090, description="Metrics port")
 
+    # Test/Development Users
+    enable_test_users: bool = Field(
+        default=False, description="Enable automatic test user creation"
+    )
+    test_username: str = Field(
+        default="test_user", description="Test user username"
+    )
+    test_password: str = Field(
+        default="test_password", description="Test user password"
+    )
+    test_email: str = Field(
+        default="test@example.com", description="Test user email"
+    )
+    test_is_admin: bool = Field(
+        default=False, description="Whether test user should have admin privileges"
+    )
+
     @field_validator("chroma_persist_directory", mode="before")
     @classmethod
     def ensure_path(cls, v):
