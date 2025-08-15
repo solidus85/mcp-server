@@ -182,12 +182,13 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         response = await call_next(request)
         
-        # Add security headers
+        # Add security headers (but don't override CORS headers)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-        response.headers["Content-Security-Policy"] = "default-src 'self'"
+        # Removed restrictive CSP that might interfere with CORS
+        # response.headers["Content-Security-Policy"] = "default-src 'self'"
         
         return response
 
@@ -195,7 +196,16 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 def setup_cors(app, origins: list = None):
     """Setup CORS middleware"""
     if origins is None:
-        origins = ["*"]  # Allow all origins in development
+        # Allow common development origins
+        origins = [
+            "*",  # Allow all origins in development
+            "http://localhost:8080",
+            "http://localhost:8090",
+            "http://localhost:3000",
+            "http://127.0.0.1:8080",
+            "http://127.0.0.1:8090",
+            "http://127.0.0.1:3000",
+        ]
     
     app.add_middleware(
         CORSMiddleware,
@@ -204,18 +214,23 @@ def setup_cors(app, origins: list = None):
         allow_methods=["*"],
         allow_headers=["*"],
         expose_headers=["X-Request-ID", "X-Process-Time", "X-RateLimit-*"],
+        max_age=3600,  # Cache preflight requests for 1 hour
     )
 
 
 def setup_middleware(app):
     """Setup all middleware"""
-    # Order matters: innermost middleware is added last
+    # Order matters: middleware added first will be the outermost layer
+    # CORS needs to be first to handle preflight requests properly
     
-    # Security headers
-    app.add_middleware(SecurityHeadersMiddleware)
+    # CORS (must be first to handle OPTIONS requests)
+    setup_cors(app)
     
-    # Compression
-    app.add_middleware(CompressionMiddleware)
+    # Error handling
+    app.add_middleware(ErrorHandlerMiddleware)
+    
+    # Logging
+    app.add_middleware(LoggingMiddleware)
     
     # Rate limiting
     from ..config import settings
@@ -224,13 +239,10 @@ def setup_middleware(app):
         requests_per_minute=settings.api_rate_limit
     )
     
-    # Logging
-    app.add_middleware(LoggingMiddleware)
+    # Compression
+    app.add_middleware(CompressionMiddleware)
     
-    # Error handling
-    app.add_middleware(ErrorHandlerMiddleware)
-    
-    # CORS (should be last/outermost)
-    setup_cors(app)
+    # Security headers (last, so it doesn't interfere with CORS)
+    app.add_middleware(SecurityHeadersMiddleware)
     
     logger.info("Middleware setup complete")
