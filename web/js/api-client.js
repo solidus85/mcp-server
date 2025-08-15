@@ -26,8 +26,12 @@ class APIClient {
     }
 
     async login(username, password) {
+        console.log('login: Attempting login with username:', username);
         try {
-            const response = await fetch(`${this.baseUrl}/api/v1/auth/login`, {
+            const url = `${this.baseUrl}/api/v1/auth/login`;
+            console.log('login: URL:', url);
+            
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -38,16 +42,20 @@ class APIClient {
                 })
             });
 
+            console.log('login: Response status:', response.status);
+            
             if (!response.ok) {
                 const error = await response.json();
+                console.error('login: Failed response:', error);
                 throw new Error(error.detail || 'Login failed');
             }
 
             const data = await response.json();
+            console.log('login: Successful response, token received:', !!data.access_token);
             this.setToken(data.access_token);
             return data;
         } catch (error) {
-            console.error('Login error:', error);
+            console.error('login: Error caught:', error);
             throw error;
         }
     }
@@ -188,13 +196,28 @@ class APIClient {
 
     // Helper to validate token
     async validateToken() {
-        if (!this.token) return false;
+        console.log('validateToken: Token present?', !!this.token);
+        if (!this.token) return { valid: false, reason: 'no-token' };
         
         try {
+            console.log('validateToken: Making request to /api/v1/auth/me');
             const response = await this.makeRequest('GET', '/api/v1/auth/me');
-            return response.ok;
+            console.log('validateToken: Response:', { ok: response.ok, status: response.status, data: response.data });
+            
+            if (response.ok) {
+                console.log('validateToken: Token is valid');
+                return { valid: true };
+            } else if (response.status === 401) {
+                console.log('validateToken: Token is invalid (401)');
+                return { valid: false, reason: 'invalid-token' };
+            } else {
+                console.log('validateToken: API error, status:', response.status);
+                return { valid: false, reason: 'api-error' };
+            }
         } catch (error) {
-            return false;
+            console.error('validateToken: Caught error:', error);
+            // Network error - API is likely offline
+            return { valid: false, reason: 'api-offline' };
         }
     }
 }

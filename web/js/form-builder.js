@@ -220,6 +220,11 @@ class FormBuilder {
         `;
         
         Object.entries(properties).forEach(([key, prop]) => {
+            // Skip if this looks like a "Request Body" label
+            if (key.toLowerCase().replace(/[_\s-]/g, '') === 'requestbody') {
+                return;
+            }
+            
             const nestedFieldId = `${fieldId}-${key}`;
             const isRequired = required.includes(key);
             
@@ -361,11 +366,11 @@ class FormBuilder {
         const schema = this.resolveSchema(content.schema, schemas);
         const required = requestBody.required || false;
         
+        // Debug: log what we're getting
+        console.log('Building request body for schema:', schema);
+        
         let html = `
             <div class="request-body-section mb-4">
-                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Request Body${required ? '<span class="text-red-500 ml-1">*</span>' : ''}
-                </h4>
         `;
         
         if (schema.type === 'object') {
@@ -383,12 +388,22 @@ class FormBuilder {
         const properties = schema.properties || {};
         const required = schema.required || [];
         
+        // Debug: log the properties we're processing
+        console.log('Building fields for properties:', Object.keys(properties));
+        
+        // Don't show a "Request Body" label - it's redundant
         let html = '<div class="space-y-3">';
         
         Object.entries(properties).forEach(([key, prop]) => {
+            console.log(`Processing property: "${key}"`);  // Debug log
             const fieldId = `${prefix}-${key}`;
             const resolvedProp = this.resolveSchema(prop, schemas);
             const isRequired = required.includes(key);
+            
+            // Skip if the key contains "Request Body" to avoid redundancy
+            if (key === 'Request Body' || key === 'request_body' || key === 'requestBody') {
+                return;
+            }
             
             html += `
                 <div class="field-group">

@@ -43,9 +43,9 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900">
+<body class="bg-gray-50 dark:bg-gray-900 h-screen overflow-hidden">
     <!-- Header -->
-    <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+    <header class="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div class="px-4 py-3 flex items-center justify-between">
             <div class="flex items-center space-x-4">
                 <h1 class="text-xl font-bold text-gray-900 dark:text-white">🚀 MCP Server API Tester</h1>
@@ -80,7 +80,8 @@
         </div>
     </header>
 
-    <div class="flex h-screen">
+    <!-- Main container with padding-top to account for fixed header -->
+    <div class="flex" style="height: calc(100vh - 3.5rem); margin-top: 3.5rem;">
         <!-- Sidebar -->
         <aside class="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
             <!-- Search -->
@@ -167,16 +168,27 @@
                                 <div id="query-params" class="space-y-2"></div>
                             </div>
                             
-                            <!-- Headers -->
+                            <!-- Headers (Collapsible) -->
                             <div id="headers-section" class="mb-4">
-                                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Headers</h4>
-                                <div id="headers" class="space-y-2">
-                                    <div class="flex space-x-2">
-                                        <input type="text" placeholder="Header name" class="flex-1 px-3 py-1 text-sm border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                        <input type="text" placeholder="Header value" class="flex-1 px-3 py-1 text-sm border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                <button id="headers-toggle" class="flex items-center justify-between w-full text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 hover:text-gray-900 dark:hover:text-gray-100">
+                                    <span class="flex items-center">
+                                        <svg id="headers-arrow" class="w-4 h-4 mr-1 transform transition-transform" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        Headers
+                                    </span>
+                                    <span id="headers-count" class="text-xs text-gray-500 dark:text-gray-400">(0)</span>
+                                </button>
+                                <div id="headers-content" class="hidden">
+                                    <div id="headers" class="space-y-2">
+                                        <div class="flex space-x-2">
+                                            <input type="text" placeholder="Header name" class="flex-1 px-3 py-1 text-sm border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white header-input" oninput="updateHeaderCount()">
+                                            <input type="text" placeholder="Header value" class="flex-1 px-3 py-1 text-sm border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white header-input" oninput="updateHeaderCount()">
+                                            <button onclick="this.parentElement.remove(); updateHeaderCount();" class="px-2 py-1 text-sm text-red-500 hover:text-red-700">×</button>
+                                        </div>
                                     </div>
+                                    <button id="add-header" class="mt-2 text-sm text-blue-500 hover:text-blue-600">+ Add header</button>
                                 </div>
-                                <button id="add-header" class="mt-2 text-sm text-blue-500 hover:text-blue-600">+ Add header</button>
                             </div>
                             
                             <!-- Request Body -->

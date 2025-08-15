@@ -135,6 +135,9 @@ function setupEventListeners() {
     
     // Clear history button
     document.getElementById('clear-history').addEventListener('click', clearRequestHistory);
+    
+    // Headers section toggle
+    document.getElementById('headers-toggle').addEventListener('click', toggleHeadersSection);
 }
 
 // Setup endpoint click handlers
@@ -549,7 +552,7 @@ async function handleAuth() {
         if (token) {
             apiClient.setToken(token);
             document.getElementById('auth-modal').classList.add('hidden');
-            updateAuthStatus();
+            await updateAuthStatus();  // Wait for status update
         }
     } else {
         // Login with username/password
@@ -559,7 +562,7 @@ async function handleAuth() {
         try {
             await apiClient.login(username, password);
             document.getElementById('auth-modal').classList.add('hidden');
-            updateAuthStatus();
+            await updateAuthStatus();  // Wait for status update
             
             // Clear form
             document.getElementById('auth-username').value = '';
@@ -576,11 +579,16 @@ async function updateAuthStatus() {
     const text = document.getElementById('auth-text');
     const btn = document.getElementById('auth-btn');
     
+    console.log('updateAuthStatus: Token exists?', !!apiClient.getToken());
+    
     if (apiClient.getToken()) {
-        const isValid = await apiClient.validateToken();
+        console.log('updateAuthStatus: Validating token...');
+        const validation = await apiClient.validateToken();
+        console.log('updateAuthStatus: Validation result:', validation);
         
-        if (isValid) {
-            indicator.className = 'w-2 h-2 rounded-full auth-authenticated';
+        if (validation.valid) {
+            console.log('updateAuthStatus: Token is valid, showing authenticated state');
+            indicator.className = 'w-2 h-2 bg-green-500 rounded-full auth-authenticated';
             text.textContent = 'Authenticated';
             btn.textContent = 'Logout';
             btn.onclick = () => {
@@ -588,16 +596,39 @@ async function updateAuthStatus() {
                 updateAuthStatus();
             };
         } else {
-            // Token is invalid
-            apiClient.setToken(null);
-            indicator.className = 'w-2 h-2 bg-red-500 rounded-full';
-            text.textContent = 'Token invalid';
-            btn.textContent = 'Login';
-            btn.onclick = () => {
-                document.getElementById('auth-modal').classList.remove('hidden');
-            };
+            console.log('updateAuthStatus: Token validation failed, reason:', validation.reason);
+            // Handle different failure reasons
+            if (validation.reason === 'api-offline') {
+                // API is offline - keep token but show offline status
+                indicator.className = 'w-2 h-2 bg-yellow-500 rounded-full';
+                text.textContent = 'API Offline';
+                btn.textContent = 'Retry';
+                btn.onclick = () => {
+                    updateAuthStatus();
+                    testConnection();
+                };
+            } else if (validation.reason === 'invalid-token') {
+                // Token is actually invalid
+                apiClient.setToken(null);
+                indicator.className = 'w-2 h-2 bg-red-500 rounded-full';
+                text.textContent = 'Token invalid';
+                btn.textContent = 'Login';
+                btn.onclick = () => {
+                    document.getElementById('auth-modal').classList.remove('hidden');
+                };
+            } else {
+                // Some other error
+                console.error('updateAuthStatus: Unknown validation failure reason:', validation);
+                indicator.className = 'w-2 h-2 bg-red-500 rounded-full';
+                text.textContent = 'Auth error';
+                btn.textContent = 'Login';
+                btn.onclick = () => {
+                    document.getElementById('auth-modal').classList.remove('hidden');
+                };
+            }
         }
     } else {
+        console.log('updateAuthStatus: No token, showing not authenticated state');
         indicator.className = 'w-2 h-2 bg-red-500 rounded-full';
         text.textContent = 'Not authenticated';
         btn.textContent = 'Login';
@@ -641,10 +672,47 @@ function addHeaderInput() {
     const newRow = document.createElement('div');
     newRow.className = 'flex space-x-2';
     newRow.innerHTML = `
-        <input type="text" placeholder="Header name" class="flex-1 px-3 py-1 text-sm border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-        <input type="text" placeholder="Header value" class="flex-1 px-3 py-1 text-sm border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+        <input type="text" placeholder="Header name" class="flex-1 px-3 py-1 text-sm border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white header-input">
+        <input type="text" placeholder="Header value" class="flex-1 px-3 py-1 text-sm border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white header-input">
+        <button onclick="this.parentElement.remove(); updateHeaderCount();" class="px-2 py-1 text-sm text-red-500 hover:text-red-700">×</button>
     `;
     container.appendChild(newRow);
+    
+    // Add change listeners to update count
+    newRow.querySelectorAll('.header-input').forEach(input => {
+        input.addEventListener('input', updateHeaderCount);
+    });
+    
+    updateHeaderCount();
+}
+
+// Toggle headers section visibility
+function toggleHeadersSection() {
+    const content = document.getElementById('headers-content');
+    const arrow = document.getElementById('headers-arrow');
+    
+    if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        arrow.classList.add('rotate-90');
+    } else {
+        content.classList.add('hidden');
+        arrow.classList.remove('rotate-90');
+    }
+}
+
+// Update header count
+function updateHeaderCount() {
+    const headers = document.querySelectorAll('#headers .flex');
+    let count = 0;
+    
+    headers.forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        if (inputs[0]?.value && inputs[1]?.value) {
+            count++;
+        }
+    });
+    
+    document.getElementById('headers-count').textContent = `(${count})`;
 }
 
 // Filter endpoints based on search
