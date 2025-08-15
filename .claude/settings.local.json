@@ -77,7 +77,8 @@
       "Bash(.venv/bin/pytest tests/test_api/test_email_crud.py::TestEmailRetrieval::test_search_emails_by_date_range -xvs --tb=no)",
       "Bash(.venv/bin/pytest tests/test_api/test_email_crud.py::TestEmailRetrieval::test_search_emails_by_date_range -xvs)",
       "Bash(.venv/bin/pytest tests/ --tb=no -q)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(curl:*)"
     ],
     "deny": []
   }
