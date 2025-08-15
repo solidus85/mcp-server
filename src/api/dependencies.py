@@ -74,7 +74,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 
 
 def verify_token(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> dict:
-    """Verify JWT token and return payload"""
+    """Verify token and return payload"""
     if not credentials:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -84,6 +84,23 @@ def verify_token(credentials: Optional[HTTPAuthorizationCredentials] = Depends(s
     
     token = credentials.credentials
     
+    # If using simple auth, just check if token matches
+    if settings.use_simple_auth:
+        if token == settings.simple_auth_token:
+            # Return a simple payload for the test user
+            return {
+                "sub": settings.test_username,
+                "email": settings.test_email,
+                "roles": ["admin"] if settings.test_is_admin else ["user"]
+            }
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication token",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    
+    # Original JWT verification (if simple auth disabled)
     try:
         payload = jwt.decode(
             token,

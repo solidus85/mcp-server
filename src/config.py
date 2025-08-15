@@ -31,12 +31,18 @@ class Settings(BaseSettings):
     )
 
     # Authentication
+    use_simple_auth: bool = Field(
+        default=True, description="Use simple token auth instead of JWT"
+    )
+    simple_auth_token: str = Field(
+        default="test-token-12345", description="Simple authentication token"
+    )
     jwt_secret_key: str = Field(
-        default="change-this-in-production", description="JWT secret key"
+        default="change-this-in-production", description="JWT secret key (used if simple auth disabled)"
     )
     jwt_algorithm: str = Field(default="HS256", description="JWT algorithm")
     jwt_expiration_minutes: int = Field(
-        default=30, description="JWT expiration in minutes"
+        default=30, description="JWT expiration in minutes (ignored if simple auth enabled)"
     )
 
     # Vector Database Configuration

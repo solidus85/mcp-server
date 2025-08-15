@@ -5,6 +5,7 @@ let apiClient;
 let uiBuilder;
 let openApiSpec;
 let currentEndpoint = null;
+let preferredBodyView = localStorage.getItem('preferredBodyView') || 'json'; // Store user's preferred view mode
 
 // Initialize application
 document.addEventListener('DOMContentLoaded', async () => {
@@ -131,6 +132,9 @@ function setupEventListeners() {
     document.getElementById('endpoint-search').addEventListener('input', (e) => {
         filterEndpoints(e.target.value);
     });
+    
+    // Clear history button
+    document.getElementById('clear-history').addEventListener('click', clearRequestHistory);
 }
 
 // Setup endpoint click handlers
@@ -321,13 +325,23 @@ function buildRequestBodyTemplate(endpointData) {
     const schema = content?.schema;
     
     if (schema && window.formBuilder) {
+        // Determine button states based on preferred view
+        const formButtonClass = preferredBodyView === 'form' 
+            ? 'px-2 py-1 text-xs bg-blue-500 text-white rounded' 
+            : 'px-2 py-1 text-xs bg-gray-300 text-gray-700 rounded';
+        const jsonButtonClass = preferredBodyView === 'json' 
+            ? 'px-2 py-1 text-xs bg-blue-500 text-white rounded' 
+            : 'px-2 py-1 text-xs bg-gray-300 text-gray-700 rounded';
+        const formViewHidden = preferredBodyView === 'json' ? 'hidden' : '';
+        const jsonViewHidden = preferredBodyView === 'form' ? 'hidden' : '';
+        
         // Add toggle for form vs JSON view
         const toggleHtml = `
             <div class="flex items-center justify-between mb-2">
                 <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Request Body</h4>
                 <div class="flex items-center space-x-2">
-                    <button type="button" id="body-view-form" class="px-2 py-1 text-xs bg-blue-500 text-white rounded">Form</button>
-                    <button type="button" id="body-view-json" class="px-2 py-1 text-xs bg-gray-300 text-gray-700 rounded">JSON</button>
+                    <button type="button" id="body-view-form" class="${formButtonClass}">Form</button>
+                    <button type="button" id="body-view-json" class="${jsonButtonClass}">JSON</button>
                 </div>
             </div>
         `;
@@ -338,16 +352,18 @@ function buildRequestBodyTemplate(endpointData) {
         // Update body section
         bodySection.innerHTML = `
             ${toggleHtml}
-            <div id="body-form-view" class="hidden">
+            <div id="body-form-view" class="${formViewHidden}">
                 ${formHtml}
             </div>
-            <div id="body-json-view">
+            <div id="body-json-view" class="${jsonViewHidden}">
                 <textarea id="request-body" rows="10" class="w-full px-3 py-2 text-sm font-mono border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
             </div>
         `;
         
         // Add toggle listeners
         document.getElementById('body-view-form')?.addEventListener('click', () => {
+            preferredBodyView = 'form'; // Save preference
+            localStorage.setItem('preferredBodyView', 'form'); // Persist preference
             document.getElementById('body-form-view').classList.remove('hidden');
             document.getElementById('body-json-view').classList.add('hidden');
             document.getElementById('body-view-form').classList.add('bg-blue-500', 'text-white');
@@ -357,6 +373,8 @@ function buildRequestBodyTemplate(endpointData) {
         });
         
         document.getElementById('body-view-json')?.addEventListener('click', () => {
+            preferredBodyView = 'json'; // Save preference
+            localStorage.setItem('preferredBodyView', 'json'); // Persist preference
             // Convert form data to JSON
             const formData = window.formBuilder.getFormData('body-form');
             if (Object.keys(formData).length > 0) {
@@ -661,5 +679,30 @@ function loadRequestHistory() {
         container.innerHTML = history.slice(0, 10)
             .map(entry => uiBuilder.buildHistoryItem(entry))
             .join('');
+    }
+}
+
+// Clear request history
+function clearRequestHistory() {
+    if (confirm('Are you sure you want to clear all request history?')) {
+        apiClient.clearHistory();
+        loadRequestHistory();
+        
+        // Show a temporary success message
+        const container = document.getElementById('history-list');
+        container.innerHTML = `
+            <div class="text-center py-4 text-green-500 dark:text-green-400">
+                History cleared successfully!
+            </div>
+        `;
+        
+        // After 2 seconds, show the normal empty state
+        setTimeout(() => {
+            container.innerHTML = `
+                <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                    No requests yet
+                </div>
+            `;
+        }, 2000);
     }
 }

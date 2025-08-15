@@ -80,7 +80,7 @@
         </div>
     </header>
 
-    <div class="flex h-screen pt-14">
+    <div class="flex h-screen">
         <!-- Sidebar -->
         <aside class="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
             <!-- Search -->
@@ -214,7 +214,12 @@
 
                     <!-- Request History -->
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Request History</h3>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Request History</h3>
+                            <button id="clear-history" class="px-3 py-1 text-sm bg-red-500 text-white rounded-md hover:bg-red-600" title="Clear all request history">
+                                Clear History
+                            </button>
+                        </div>
                         <div id="history-list" class="space-y-2">
                             <div class="text-center py-4 text-gray-500 dark:text-gray-400">
                                 No requests yet

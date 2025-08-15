@@ -38,6 +38,23 @@ async def login(
     db: AsyncSession = Depends(get_db)
 ):
     """Authenticate user and return access token"""
+    # If using simple auth, just check username/password match test credentials
+    if settings.use_simple_auth:
+        if (request.username == settings.test_username and 
+            request.password == settings.test_password):
+            # Return the simple token
+            return TokenResponse(
+                access_token=settings.simple_auth_token,
+                token_type="bearer",
+                expires_in=999999999  # Effectively never expires
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid credentials"
+            )
+    
+    # Original JWT-based authentication (if simple auth disabled)
     repo = UserRepository(db)
     
     # Get user by username
@@ -148,6 +165,18 @@ async def get_me(
     db: AsyncSession = Depends(get_db)
 ):
     """Get current user information"""
+    # If using simple auth, return test user info
+    if settings.use_simple_auth:
+        return UserProfile(
+            username=settings.test_username,
+            email=settings.test_email,
+            full_name="Test User",
+            roles=current_user.get("roles", ["user"]),
+            is_active=True,
+            is_superuser=settings.test_is_admin
+        )
+    
+    # Original database lookup (if simple auth disabled)
     repo = UserRepository(db)
     
     # Get full user data from database

@@ -28,7 +28,7 @@ def main():
         print(f"🚀 MCP API Testing Tool")
         print(f"=" * 40)
         print(f"Server running at: http://localhost:{PORT}")
-        print(f"API Server should be at: http://localhost:8010")
+        print(f"API Server should be at: http://localhost:8000")
         print(f"=" * 40)
         print(f"Press Ctrl+C to stop the server")
         
