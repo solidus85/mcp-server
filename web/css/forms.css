@@ -1,0 +1,174 @@
+/* Form styles for MCP Server API Tester */
+
+/* Light mode input styles - explicit colors and backgrounds */
+input[type="text"], 
+input[type="password"], 
+input[type="email"], 
+input[type="number"], 
+input[type="url"], 
+input[type="search"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+textarea, 
+select {
+    color: #111827 !important; /* text-gray-900 */
+    background-color: white !important;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Input focus styles with proper box-shadow */
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Dark mode adjustments */
+.dark input[type="text"],
+.dark input[type="password"],
+.dark input[type="email"],
+.dark input[type="number"],
+.dark input[type="url"],
+.dark input[type="search"],
+.dark input[type="date"],
+.dark input[type="time"],
+.dark input[type="datetime-local"],
+.dark textarea,
+.dark select {
+    background-color: #374151 !important;
+    border-color: #4b5563;
+    color: white !important;
+}
+
+.dark input::placeholder, .dark textarea::placeholder {
+    color: #9ca3af;
+}
+
+/* Enhanced focus states with dark mode support */
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+    border-color: #60a5fa !important;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+/* Custom checkbox styling */
+.checkbox {
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #d1d5db;
+    border-radius: 0.25rem;
+    background-color: white;
+    cursor: pointer;
+}
+
+.checkbox:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.checkbox:checked::after {
+    content: '✓';
+    display: block;
+    text-align: center;
+    color: white;
+    font-size: 0.75rem;
+    line-height: 0.75rem;
+}
+
+/* Enhanced switch toggle */
+input[type="checkbox"].sr-only:checked + div {
+    background-color: #3b82f6;
+}
+
+input[type="checkbox"].sr-only:focus + div {
+    ring: 4px;
+    ring-color: #93bbfc;
+}
+
+/* Date/time input styling */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+    color-scheme: light;
+}
+
+.dark input[type="date"],
+.dark input[type="time"],
+.dark input[type="datetime-local"] {
+    color-scheme: dark;
+}
+
+/* File input styling */
+input[type="file"] {
+    padding: 0.25rem;
+}
+
+input[type="file"]::-webkit-file-upload-button {
+    padding: 0.25rem 0.75rem;
+    margin-right: 0.5rem;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+
+input[type="file"]::-webkit-file-upload-button:hover {
+    background-color: #2563eb;
+}
+
+/* Multi-select styling */
+select[multiple] {
+    padding: 0.5rem;
+}
+
+select[multiple] option {
+    padding: 0.25rem 0.5rem;
+}
+
+select[multiple] option:checked {
+    background-color: #3b82f6;
+    color: white;
+}
+
+/* Radio button group styling */
+input[type="radio"] {
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #d1d5db;
+    border-radius: 50%;
+    background-color: white;
+    cursor: pointer;
+}
+
+input[type="radio"]:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+input[type="radio"]:checked::after {
+    content: '';
+    display: block;
+    width: 0.375rem;
+    height: 0.375rem;
+    margin: 0.1875rem;
+    background-color: white;
+    border-radius: 50%;
+}
+
+.dark input[type="radio"] {
+    background-color: #374151;
+    border-color: #4b5563;
+}
+
+/* Loading state for inputs */
+input.loading,
+textarea.loading,
+select.loading {
+    opacity: 0.5;
+    cursor: wait;
+}

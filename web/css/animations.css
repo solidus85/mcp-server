@@ -1,0 +1,16 @@
+/* Animations and transitions for MCP Server API Tester */
+
+/* Animation for auth indicator */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.auth-authenticated {
+    background-color: #10b981;
+    animation: pulse 2s infinite;
+}
