@@ -243,6 +243,11 @@ class FormBuilder {
     buildValidationHints(schema) {
         return this.validation.buildValidationHints(schema);
     }
+
+    // Build parameter field (delegate to renderer module)
+    buildParameterField(param, type) {
+        return this.renderer.buildParameterField(param, type);
+    }
 }
 
 // Create global instance
