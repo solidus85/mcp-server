@@ -80,6 +80,7 @@
       "Bash(cp:*)",
       "Bash(curl:*)"
     ],
-    "deny": []
+    "deny": [],
+    "defaultMode": "acceptEdits"
   }
 }
