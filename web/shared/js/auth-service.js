@@ -11,11 +11,11 @@ class AuthService {
         this.config = window.AppConfig.auth;
         
         // Initialize from storage
-        this.loadFromwindow.Storage();
+        this.loadFromStorage();
     }
 
     // Initialize authentication state from storage
-    loadFromwindow.Storage() {
+    loadFromStorage() {
         const storedToken = this.storage.get(this.config.tokenKey);
         const storedUser = this.storage.get(this.config.userKey);
 

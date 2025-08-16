@@ -52,7 +52,7 @@ window.AppConfig = {
 // Storage utilities - Make it globally available
 window.Storage = {
     get(key) {
-        const storage = window[window.window.AppConfig.storage.type];
+        const storage = window[window.AppConfig.storage.type];
         const value = storage.getItem(window.AppConfig.storage.prefix + key);
         try {
             return JSON.parse(value);
@@ -62,18 +62,18 @@ window.Storage = {
     },
 
     set(key, value) {
-        const storage = window[window.window.AppConfig.storage.type];
+        const storage = window[window.AppConfig.storage.type];
         const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
         storage.setItem(window.AppConfig.storage.prefix + key, stringValue);
     },
 
     remove(key) {
-        const storage = window[window.window.AppConfig.storage.type];
+        const storage = window[window.AppConfig.storage.type];
         storage.removeItem(window.AppConfig.storage.prefix + key);
     },
 
     clear() {
-        const storage = window[window.window.AppConfig.storage.type];
+        const storage = window[window.AppConfig.storage.type];
         const keysToRemove = [];
         for (let i = 0; i < storage.length; i++) {
             const key = storage.key(i);
