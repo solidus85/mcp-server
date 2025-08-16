@@ -222,3 +222,5 @@ __marimo__/
 /chroma/
 
 *.png
+
+generated_emails.json
