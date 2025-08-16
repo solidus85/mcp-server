@@ -65,9 +65,15 @@ class ModuleLoader {
                 loaded: false
             };
 
-            // Load module HTML
-            const htmlPath = `${moduleConfig.path}index.html`;
-            const response = await fetch(htmlPath);
+            // Load module HTML - check for module-content.html first, fallback to index.html
+            let htmlPath = `${moduleConfig.path}module-content.html`;
+            let response = await fetch(htmlPath);
+            
+            if (!response.ok) {
+                // Fallback to index.html if module-content.html doesn't exist
+                htmlPath = `${moduleConfig.path}index.html`;
+                response = await fetch(htmlPath);
+            }
             const html = await response.text();
 
             // Create module container

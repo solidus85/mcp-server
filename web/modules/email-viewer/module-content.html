@@ -1,0 +1,64 @@
+<!-- Email Viewer Module Content -->
+<div class="h-full flex">
+    <!-- Left Sidebar - Thread List -->
+    <div class="w-96 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+        <!-- Search and Filter Bar -->
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex space-x-2">
+                <input type="text" id="searchInput" placeholder="Search emails..." 
+                       class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button id="filterBtn" class="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                    <i class="fas fa-filter"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Thread List -->
+        <div id="threadList" class="flex-1 overflow-y-auto">
+            <div class="p-4 text-gray-500 dark:text-gray-400 text-center">
+                Loading emails...
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Side - Email Content -->
+    <div class="flex-1 flex flex-col bg-gray-50 dark:bg-gray-900">
+        <!-- Email Actions Bar -->
+        <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <button class="px-3 py-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                        <i class="fas fa-reply"></i> Reply
+                    </button>
+                    <button class="px-3 py-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                        <i class="fas fa-forward"></i> Forward
+                    </button>
+                    <button class="px-3 py-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button id="refreshBtn" class="px-3 py-1 text-blue-500 hover:text-blue-600">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Email Chain Display -->
+        <div id="emailChain" class="flex-1 overflow-y-auto p-6">
+            <div class="text-center text-gray-500 dark:text-gray-400 py-12">
+                <i class="fas fa-envelope text-4xl mb-4"></i>
+                <p>Select an email to view its content</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Load Email Viewer Scripts -->
+<script src="js/utils.js"></script>
+<script src="js/api-client.js"></script>
+<script src="js/thread-list.js"></script>
+<script src="js/email-chain.js"></script>
+<script src="js/search-filter.js"></script>
+<script src="js/app.js"></script>

@@ -45,7 +45,7 @@ class Navigation {
 
             // Create navigation items
             const navList = document.createElement('ul');
-            navList.className = 'nav-list flex space-x-1';
+            navList.className = 'nav-list flex space-x-2';
 
             registry.modules
                 .filter(module => module.enabled)
@@ -70,18 +70,19 @@ class Navigation {
         li.className = 'nav-item';
 
         const button = document.createElement('button');
-        button.className = 'nav-link px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors';
+        button.className = 'nav-link px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600';
         button.setAttribute('data-module', module.id);
         
         // Add icon
         if (module.icon) {
             const icon = document.createElement('i');
-            icon.className = `fas ${module.icon}`;
+            icon.className = `fas ${module.icon} text-sm`;
             button.appendChild(icon);
         }
 
         // Add text
         const text = document.createElement('span');
+        text.className = 'text-sm font-medium';
         text.textContent = module.name;
         button.appendChild(text);
 
