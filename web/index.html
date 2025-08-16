@@ -390,8 +390,18 @@
 
         function setConnectionStatus(status) {
             const statusElement = document.getElementById('connectionStatus');
+            if (!statusElement) {
+                console.warn('Connection status element not found');
+                return;
+            }
+            
             const icon = statusElement.querySelector('i');
             const text = statusElement.querySelector('span');
+            
+            if (!icon || !text) {
+                console.warn('Connection status icon or text not found');
+                return;
+            }
             
             if (status === 'connected') {
                 statusElement.className = 'flex items-center space-x-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900';

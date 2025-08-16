@@ -1,4 +1,9 @@
 // API Client for Email Viewer
+(function() {
+    // Avoid redeclaration if already defined
+    if (window.EmailApiClient) {
+        return;
+    }
 
 class ApiClient {
     constructor() {
@@ -152,4 +157,12 @@ class ApiClient {
 }
 
 // Create global instance
-const apiClient = new ApiClient();
+    // Export class
+    window.EmailApiClient = ApiClient;
+    
+    // Create instance
+    const emailApiClient = new ApiClient();
+    
+    // Expose as apiClient for the module to use
+    window.apiClient = emailApiClient;
+})();
