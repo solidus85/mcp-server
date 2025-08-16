@@ -53,8 +53,18 @@ async def list_emails(
     # Count total emails
     total = await repo.count_search_results(filters)
     
+    # Convert to EmailResponse models to avoid circular references
+    email_responses = []
+    for email in emails:
+        try:
+            email_responses.append(EmailResponse.model_validate(email))
+        except Exception as e:
+            # Log error and skip problematic email
+            print(f"Error serializing email {email.id}: {e}")
+            continue
+    
     return {
-        "items": emails,
+        "items": email_responses,
         "page": page,
         "size": size,
         "total": total,

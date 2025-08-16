@@ -96,7 +96,7 @@ async def list_resources(
     return ResourceListResponse(
         resources=[
             ResourceInfo(
-                uri=res.uri,
+                uri=str(res.uri),
                 name=res.name,
                 description=res.description,
                 mime_type=res.mimeType,

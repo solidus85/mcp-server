@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, ForwardRef
 from pydantic import BaseModel, EmailStr, Field, ConfigDict, model_validator, computed_field
 from enum import Enum
 
@@ -52,13 +52,25 @@ class PersonSummary(BaseModel):
     
     id: str
     email: EmailStr
-    full_name: str
+    full_name: Optional[str] = None
     display_name: Optional[str] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     organization: Optional[str] = None
     is_active: bool = True
     is_external: bool = False
+    
+    @model_validator(mode='after')
+    def compute_full_name(self):
+        """Compute full_name if not set"""
+        if not self.full_name:
+            if self.first_name and self.last_name:
+                self.full_name = f"{self.first_name} {self.last_name}"
+            elif self.display_name:
+                self.full_name = self.display_name
+            elif self.email:
+                self.full_name = self.email.split("@")[0]
+        return self
 
 
 # Project Schemas

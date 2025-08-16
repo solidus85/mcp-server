@@ -47,7 +47,7 @@ class ErrorHandlerMiddleware(BaseHTTPMiddleware):
             
             return JSONResponse(
                 status_code=500,
-                content=error_response.model_dump()
+                content=error_response.model_dump(mode='json')
             )
 
 
