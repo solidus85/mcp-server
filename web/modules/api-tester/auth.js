@@ -157,3 +157,4 @@ class AuthManager {
 
 // Export for use in other scripts
 window.AuthManager = AuthManager;
+console.log('AuthManager loaded and exported to window');

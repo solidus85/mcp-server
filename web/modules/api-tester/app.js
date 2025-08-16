@@ -11,6 +11,23 @@ let uiHelpers;
 
 // Initialize function that can be called directly
 async function initApiTesterApp() {
+    // Check if all required classes are loaded
+    const requiredClasses = [
+        'APIClient', 'UIBuilder', 'AuthManager', 'EndpointsManager', 
+        'RequestBuilder', 'ResponseHandler', 'UIHelpers'
+    ];
+    
+    for (const className of requiredClasses) {
+        if (typeof window[className] === 'undefined') {
+            console.error(`Required class ${className} is not defined. Waiting...`);
+            // Try again in a moment
+            setTimeout(() => initApiTesterApp(), 100);
+            return;
+        }
+    }
+    
+    console.log('All required classes loaded, initializing API Tester...');
+    
     // Initialize form builder first (needed by UI components)
     if (typeof FormBuilder !== 'undefined') {
         window.formBuilder = new FormBuilder();
