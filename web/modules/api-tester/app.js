@@ -9,8 +9,8 @@ let requestBuilder;
 let responseHandler;
 let uiHelpers;
 
-// Initialize application
-document.addEventListener('DOMContentLoaded', async () => {
+// Initialize function that can be called directly
+async function initApiTesterApp() {
     // Initialize core services (these are defined in external scripts)
     apiClient = new APIClient();
     uiBuilder = new UIBuilder();
@@ -44,4 +44,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Test initial connection
     await uiHelpers.testConnection();
-});
+}
+
+// Initialize on DOMContentLoaded if running standalone
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApiTesterApp);
+} else {
+    // DOM is already loaded, initialize immediately
+    initApiTesterApp();
+}

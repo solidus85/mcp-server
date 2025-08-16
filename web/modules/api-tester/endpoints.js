@@ -10,7 +10,7 @@ class EndpointsManager {
     // Load OpenAPI specification
     async loadOpenApiSpec() {
         try {
-            const response = await fetch('openapi.json');
+            const response = await fetch('/modules/api-tester/openapi.json');
             this.openApiSpec = await response.json();
             
             // Build endpoints list
