@@ -1,7 +1,7 @@
 // Application Configuration
 // Central configuration for the MCP Server Web Application
 
-const AppConfig = {
+window.AppConfig = {
     // API Configuration
     api: {
         protocol: 'http',
@@ -49,11 +49,11 @@ const AppConfig = {
     }
 };
 
-// Storage utilities
-const Storage = {
+// Storage utilities - Make it globally available
+window.Storage = {
     get(key) {
-        const storage = window[AppConfig.storage.type];
-        const value = storage.getItem(AppConfig.storage.prefix + key);
+        const storage = window[window.window.AppConfig.storage.type];
+        const value = storage.getItem(window.AppConfig.storage.prefix + key);
         try {
             return JSON.parse(value);
         } catch {
@@ -62,22 +62,22 @@ const Storage = {
     },
 
     set(key, value) {
-        const storage = window[AppConfig.storage.type];
+        const storage = window[window.window.AppConfig.storage.type];
         const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
-        storage.setItem(AppConfig.storage.prefix + key, stringValue);
+        storage.setItem(window.AppConfig.storage.prefix + key, stringValue);
     },
 
     remove(key) {
-        const storage = window[AppConfig.storage.type];
-        storage.removeItem(AppConfig.storage.prefix + key);
+        const storage = window[window.window.AppConfig.storage.type];
+        storage.removeItem(window.AppConfig.storage.prefix + key);
     },
 
     clear() {
-        const storage = window[AppConfig.storage.type];
+        const storage = window[window.window.AppConfig.storage.type];
         const keysToRemove = [];
         for (let i = 0; i < storage.length; i++) {
             const key = storage.key(i);
-            if (key && key.startsWith(AppConfig.storage.prefix)) {
+            if (key && key.startsWith(window.AppConfig.storage.prefix)) {
                 keysToRemove.push(key);
             }
         }
@@ -85,22 +85,22 @@ const Storage = {
     }
 };
 
-// Logger utility
-const Logger = {
+// Logger utility - Make it globally available
+window.Logger = {
     debug(...args) {
-        if (AppConfig.dev.debug && ['debug'].includes(AppConfig.dev.logLevel)) {
+        if (window.AppConfig.dev.debug && ['debug'].includes(window.AppConfig.dev.logLevel)) {
             console.log('[DEBUG]', ...args);
         }
     },
 
     info(...args) {
-        if (['debug', 'info'].includes(AppConfig.dev.logLevel)) {
+        if (['debug', 'info'].includes(window.AppConfig.dev.logLevel)) {
             console.info('[INFO]', ...args);
         }
     },
 
     warn(...args) {
-        if (['debug', 'info', 'warn'].includes(AppConfig.dev.logLevel)) {
+        if (['debug', 'info', 'warn'].includes(window.AppConfig.dev.logLevel)) {
             console.warn('[WARN]', ...args);
         }
     },

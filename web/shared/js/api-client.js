@@ -3,7 +3,7 @@
 
 class SharedApiClient {
     constructor() {
-        this.baseUrl = AppConfig.api.baseUrl;
+        this.baseUrl = window.AppConfig.api.baseUrl;
         this.authService = window.authService;
         this.eventBus = window.eventBus;
         this.requestQueue = [];
@@ -70,7 +70,7 @@ class SharedApiClient {
                 error: error.message
             });
 
-            Logger.error('API request failed:', error);
+            window.Logger.error('API request failed:', error);
             throw error;
 
         } finally {
@@ -265,7 +265,7 @@ class SharedApiClient {
             id: Math.random().toString(36).substr(2, 9)
         });
 
-        Logger.info('Request queued:', request);
+        window.Logger.info('Request queued:', request);
         
         // Try to process queue
         this.processQueue();
@@ -285,7 +285,7 @@ class SharedApiClient {
             try {
                 // Check if online
                 if (!navigator.onLine) {
-                    Logger.info('Offline, waiting to process queue');
+                    window.Logger.info('Offline, waiting to process queue');
                     break;
                 }
 
@@ -295,10 +295,10 @@ class SharedApiClient {
 
                 // Remove from queue if successful
                 this.requestQueue.shift();
-                Logger.info('Queued request processed:', request.id);
+                window.Logger.info('Queued request processed:', request.id);
 
             } catch (error) {
-                Logger.error('Failed to process queued request:', error);
+                window.Logger.error('Failed to process queued request:', error);
                 
                 // If auth error, stop processing
                 if (error.status === 401) {
@@ -331,17 +331,17 @@ class SharedApiClient {
         const ws = new WebSocket(url);
 
         ws.onopen = () => {
-            Logger.info('WebSocket connected:', endpoint);
+            window.Logger.info('WebSocket connected:', endpoint);
             this.eventBus.emit('websocket:connected', { endpoint });
         };
 
         ws.onclose = () => {
-            Logger.info('WebSocket disconnected:', endpoint);
+            window.Logger.info('WebSocket disconnected:', endpoint);
             this.eventBus.emit('websocket:disconnected', { endpoint });
         };
 
         ws.onerror = (error) => {
-            Logger.error('WebSocket error:', error);
+            window.Logger.error('WebSocket error:', error);
             this.eventBus.emit('websocket:error', { endpoint, error });
         };
 
@@ -354,10 +354,10 @@ window.sharedApiClient = new SharedApiClient();
 
 // Setup online/offline handlers
 window.addEventListener('online', () => {
-    Logger.info('Back online, processing queued requests');
+    window.Logger.info('Back online, processing queued requests');
     window.sharedApiClient.processQueue();
 });
 
 window.addEventListener('offline', () => {
-    Logger.info('Gone offline');
+    window.Logger.info('Gone offline');
 });

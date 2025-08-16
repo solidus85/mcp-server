@@ -13,11 +13,11 @@ class ApiTesterModule {
 
     async init() {
         if (this.initialized) {
-            Logger.debug('API Tester module already initialized');
+            window.Logger.debug('API Tester module already initialized');
             return;
         }
 
-        Logger.info('Initializing API Tester module');
+        window.Logger.info('Initializing API Tester module');
 
         try {
             // Update paths in the module's scripts to use shared services
@@ -32,10 +32,10 @@ class ApiTesterModule {
             this.setupEventListeners();
 
             this.initialized = true;
-            Logger.info('API Tester module initialized successfully');
+            window.Logger.info('API Tester module initialized successfully');
 
         } catch (error) {
-            Logger.error('Failed to initialize API Tester module:', error);
+            window.Logger.error('Failed to initialize API Tester module:', error);
             throw error;
         }
     }
@@ -77,7 +77,7 @@ class ApiTesterModule {
     }
 
     async destroy() {
-        Logger.info('Destroying API Tester module');
+        window.Logger.info('Destroying API Tester module');
         
         // Clean up event listeners
         this.eventBus.off(ModuleEvents.AUTH_LOGIN);
@@ -126,4 +126,4 @@ window.initApiTester = async function() {
     }
 };
 
-Logger.info('API Tester module loaded');
+window.Logger.info('API Tester module loaded');

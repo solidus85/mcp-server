@@ -7,15 +7,15 @@ class AuthService {
         this.user = null;
         this.isAuthenticated = false;
         this.eventBus = window.eventBus || new EventBus();
-        this.storage = Storage;
-        this.config = AppConfig.auth;
+        this.storage = window.Storage;
+        this.config = window.AppConfig.auth;
         
         // Initialize from storage
-        this.loadFromStorage();
+        this.loadFromwindow.Storage();
     }
 
     // Initialize authentication state from storage
-    loadFromStorage() {
+    loadFromwindow.Storage() {
         const storedToken = this.storage.get(this.config.tokenKey);
         const storedUser = this.storage.get(this.config.userKey);
 
@@ -29,10 +29,10 @@ class AuthService {
 
             // Check if token is expired
             if (this.isTokenExpired()) {
-                Logger.warn('Stored token is expired');
+                window.Logger.warn('Stored token is expired');
                 this.logout();
             } else {
-                Logger.info('Authentication restored from storage');
+                window.Logger.info('Authentication restored from storage');
                 this.eventBus.emit(ModuleEvents.AUTH_LOGIN, { user: this.user });
             }
         } else {
@@ -40,7 +40,7 @@ class AuthService {
             if (this.config.defaultToken) {
                 this.token = this.config.defaultToken;
                 this.isAuthenticated = true;
-                Logger.info('Using default authentication token');
+                window.Logger.info('Using default authentication token');
             }
         }
     }
@@ -48,7 +48,7 @@ class AuthService {
     // Login with username and password
     async login(username, password) {
         try {
-            const response = await fetch(`${AppConfig.api.baseUrl}/auth/login`, {
+            const response = await fetch(`${window.AppConfig.api.baseUrl}/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -66,11 +66,11 @@ class AuthService {
             // Store authentication data
             this.setAuthData(data.access_token, data.user);
 
-            Logger.info('Login successful');
+            window.Logger.info('Login successful');
             return { success: true, user: this.user };
 
         } catch (error) {
-            Logger.error('Login failed:', error);
+            window.Logger.error('Login failed:', error);
             throw error;
         }
     }
@@ -78,7 +78,7 @@ class AuthService {
     // Register a new user
     async register(username, email, password) {
         try {
-            const response = await fetch(`${AppConfig.api.baseUrl}/auth/register`, {
+            const response = await fetch(`${window.AppConfig.api.baseUrl}/auth/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -93,11 +93,11 @@ class AuthService {
 
             const data = await response.json();
             
-            Logger.info('Registration successful');
+            window.Logger.info('Registration successful');
             return { success: true, user: data };
 
         } catch (error) {
-            Logger.error('Registration failed:', error);
+            window.Logger.error('Registration failed:', error);
             throw error;
         }
     }
@@ -125,7 +125,7 @@ class AuthService {
     // Set token directly (for manual token entry)
     setToken(token) {
         this.setAuthData(token);
-        Logger.info('Token set manually');
+        window.Logger.info('Token set manually');
     }
 
     // Logout
@@ -142,7 +142,7 @@ class AuthService {
         // Emit logout event
         this.eventBus.emit(ModuleEvents.AUTH_LOGOUT);
 
-        Logger.info('Logged out');
+        window.Logger.info('Logged out');
     }
 
     // Get current token
@@ -176,7 +176,7 @@ class AuthService {
         }
 
         try {
-            const response = await fetch(`${AppConfig.api.baseUrl}/auth/refresh`, {
+            const response = await fetch(`${window.AppConfig.api.baseUrl}/auth/refresh`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${this.token}`
@@ -195,11 +195,11 @@ class AuthService {
             // Emit refresh event
             this.eventBus.emit(ModuleEvents.AUTH_TOKEN_REFRESHED, { token: data.access_token });
 
-            Logger.info('Token refreshed successfully');
+            window.Logger.info('Token refreshed successfully');
             return data.access_token;
 
         } catch (error) {
-            Logger.error('Token refresh failed:', error);
+            window.Logger.error('Token refresh failed:', error);
             
             // Emit token expired event
             this.eventBus.emit(ModuleEvents.AUTH_TOKEN_EXPIRED);
@@ -228,7 +228,7 @@ class AuthService {
         }
 
         try {
-            const response = await fetch(`${AppConfig.api.baseUrl}/auth/verify`, {
+            const response = await fetch(`${window.AppConfig.api.baseUrl}/auth/verify`, {
                 method: 'GET',
                 headers: this.getAuthHeaders()
             });
@@ -236,7 +236,7 @@ class AuthService {
             return response.ok;
 
         } catch (error) {
-            Logger.error('Token verification failed:', error);
+            window.Logger.error('Token verification failed:', error);
             return false;
         }
     }
@@ -248,7 +248,7 @@ class AuthService {
         }
 
         try {
-            const response = await fetch(`${AppConfig.api.baseUrl}/auth/profile`, {
+            const response = await fetch(`${window.AppConfig.api.baseUrl}/auth/profile`, {
                 method: 'GET',
                 headers: this.getAuthHeaders()
             });
@@ -266,7 +266,7 @@ class AuthService {
             return profile;
 
         } catch (error) {
-            Logger.error('Failed to fetch profile:', error);
+            window.Logger.error('Failed to fetch profile:', error);
             throw error;
         }
     }
@@ -278,7 +278,7 @@ class AuthService {
         }
 
         try {
-            const response = await fetch(`${AppConfig.api.baseUrl}/auth/profile`, {
+            const response = await fetch(`${window.AppConfig.api.baseUrl}/auth/profile`, {
                 method: 'PATCH',
                 headers: {
                     ...this.getAuthHeaders(),
@@ -300,7 +300,7 @@ class AuthService {
             return profile;
 
         } catch (error) {
-            Logger.error('Failed to update profile:', error);
+            window.Logger.error('Failed to update profile:', error);
             throw error;
         }
     }
@@ -320,7 +320,7 @@ class AuthService {
                 try {
                     await this.refreshToken();
                 } catch (error) {
-                    Logger.error('Auto-refresh failed:', error);
+                    window.Logger.error('Auto-refresh failed:', error);
                 }
             }
         }, refreshInterval);

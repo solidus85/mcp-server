@@ -18,7 +18,7 @@ class ModuleLoader {
         // Load module registry
         await this.loadModuleRegistry();
         
-        Logger.info('ModuleLoader initialized');
+        window.Logger.info('ModuleLoader initialized');
     }
 
     async loadModuleRegistry() {
@@ -27,11 +27,11 @@ class ModuleLoader {
             const registry = await response.json();
             
             this.registry = registry;
-            Logger.info('Module registry loaded:', registry);
+            window.Logger.info('Module registry loaded:', registry);
             
             return registry;
         } catch (error) {
-            Logger.error('Failed to load module registry:', error);
+            window.Logger.error('Failed to load module registry:', error);
             throw error;
         }
     }
@@ -39,7 +39,7 @@ class ModuleLoader {
     async loadModule(moduleId) {
         // Check if module is already loaded
         if (this.modules.has(moduleId)) {
-            Logger.debug(`Module ${moduleId} already loaded`);
+            window.Logger.debug(`Module ${moduleId} already loaded`);
             return this.modules.get(moduleId);
         }
 
@@ -53,7 +53,7 @@ class ModuleLoader {
             throw new Error(`Module ${moduleId} is disabled`);
         }
 
-        Logger.info(`Loading module: ${moduleId}`);
+        window.Logger.info(`Loading module: ${moduleId}`);
 
         try {
             // Create module instance
@@ -104,7 +104,7 @@ class ModuleLoader {
                         newScript.setAttribute('data-module', moduleId);
                         document.head.appendChild(newScript);
                     } catch (error) {
-                        Logger.error(`Error executing inline script for module ${moduleId}:`, error);
+                        window.Logger.error(`Error executing inline script for module ${moduleId}:`, error);
                     }
                 }
             });
@@ -123,7 +123,7 @@ class ModuleLoader {
                         module.instance = window[`${moduleId}Module`];
                     }
                 } catch (error) {
-                    Logger.warn(`Module entry point not found or failed to load: ${modulePath}`);
+                    window.Logger.warn(`Module entry point not found or failed to load: ${modulePath}`);
                 }
             }
 
@@ -136,11 +136,11 @@ class ModuleLoader {
             // Emit module loaded event
             this.eventBus.emit('module:loaded', { moduleId, module });
 
-            Logger.info(`Module ${moduleId} loaded successfully`);
+            window.Logger.info(`Module ${moduleId} loaded successfully`);
             return module;
 
         } catch (error) {
-            Logger.error(`Failed to load module ${moduleId}:`, error);
+            window.Logger.error(`Failed to load module ${moduleId}:`, error);
             throw error;
         }
     }
@@ -164,7 +164,7 @@ class ModuleLoader {
     }
 
     async switchToModule(moduleId) {
-        Logger.info(`Switching to module: ${moduleId}`);
+        window.Logger.info(`Switching to module: ${moduleId}`);
 
         // Deactivate current module
         if (this.currentModule) {
@@ -195,7 +195,7 @@ class ModuleLoader {
             throw new Error(`Module ${moduleId} not loaded`);
         }
 
-        Logger.debug(`Activating module: ${moduleId}`);
+        window.Logger.debug(`Activating module: ${moduleId}`);
 
         // Clear container and add module element
         this.moduleContainer.innerHTML = '';
@@ -209,7 +209,7 @@ class ModuleLoader {
             try {
                 await module.instance.init();
             } catch (error) {
-                Logger.error(`Error initializing module ${moduleId}:`, error);
+                window.Logger.error(`Error initializing module ${moduleId}:`, error);
             }
         }
 
@@ -223,14 +223,14 @@ class ModuleLoader {
             return;
         }
 
-        Logger.debug(`Deactivating module: ${moduleId}`);
+        window.Logger.debug(`Deactivating module: ${moduleId}`);
 
         // Call module's destroy method if it exists
         if (module.instance && typeof module.instance.destroy === 'function') {
             try {
                 await module.instance.destroy();
             } catch (error) {
-                Logger.error(`Error destroying module ${moduleId}:`, error);
+                window.Logger.error(`Error destroying module ${moduleId}:`, error);
             }
         }
 
@@ -256,7 +256,7 @@ class ModuleLoader {
     }
 
     async reloadModule(moduleId) {
-        Logger.info(`Reloading module: ${moduleId}`);
+        window.Logger.info(`Reloading module: ${moduleId}`);
 
         // Deactivate if current
         if (this.currentModule === moduleId) {

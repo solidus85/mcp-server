@@ -13,7 +13,7 @@ class Navigation {
     async init(navContainerId) {
         this.navContainer = document.getElementById(navContainerId);
         if (!this.navContainer) {
-            Logger.warn(`Navigation container with id '${navContainerId}' not found`);
+            window.Logger.warn(`Navigation container with id '${navContainerId}' not found`);
         }
 
         // Setup hash change listener
@@ -28,7 +28,7 @@ class Navigation {
         // Handle initial route
         this.handleInitialRoute();
 
-        Logger.info('Navigation system initialized');
+        window.Logger.info('Navigation system initialized');
     }
 
     async buildNavigation() {
@@ -61,7 +61,7 @@ class Navigation {
             this.navContainer.appendChild(navList);
             
         } catch (error) {
-            Logger.error('Failed to build navigation:', error);
+            window.Logger.error('Failed to build navigation:', error);
         }
     }
 
@@ -102,11 +102,11 @@ class Navigation {
 
     async navigateTo(moduleId) {
         if (this.currentRoute === moduleId) {
-            Logger.debug(`Already on module: ${moduleId}`);
+            window.Logger.debug(`Already on module: ${moduleId}`);
             return;
         }
 
-        Logger.info(`Navigating to: ${moduleId}`);
+        window.Logger.info(`Navigating to: ${moduleId}`);
 
         try {
             // Update navigation UI
@@ -125,7 +125,7 @@ class Navigation {
             });
 
         } catch (error) {
-            Logger.error(`Failed to navigate to module ${moduleId}:`, error);
+            window.Logger.error(`Failed to navigate to module ${moduleId}:`, error);
             
             // Show error notification
             this.showNavigationError(moduleId, error);

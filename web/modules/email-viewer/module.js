@@ -14,11 +14,11 @@ class EmailViewerModule {
 
     async init() {
         if (this.initialized) {
-            Logger.debug('Email Viewer module already initialized');
+            window.Logger.debug('Email Viewer module already initialized');
             return;
         }
 
-        Logger.info('Initializing Email Viewer module');
+        window.Logger.info('Initializing Email Viewer module');
 
         try {
             // Update the API client to use shared configuration
@@ -34,10 +34,10 @@ class EmailViewerModule {
             await this.loadInitialData();
 
             this.initialized = true;
-            Logger.info('Email Viewer module initialized successfully');
+            window.Logger.info('Email Viewer module initialized successfully');
 
         } catch (error) {
-            Logger.error('Failed to initialize Email Viewer module:', error);
+            window.Logger.error('Failed to initialize Email Viewer module:', error);
             throw error;
         }
     }
@@ -51,7 +51,7 @@ class EmailViewerModule {
 
         // Create new API client for email module
         window.apiClient = {
-            baseUrl: AppConfig.api.baseUrl,
+            baseUrl: window.AppConfig.api.baseUrl,
             authToken: this.authService.getToken(),
             headers: {
                 'Authorization': `Bearer ${this.authService.getToken()}`,
@@ -217,7 +217,7 @@ class EmailViewerModule {
             }
 
         } catch (error) {
-            Logger.error('Failed to load initial data:', error);
+            window.Logger.error('Failed to load initial data:', error);
             this.eventBus.emit(ModuleEvents.UI_NOTIFICATION, {
                 type: 'error',
                 title: 'Load Error',
@@ -233,15 +233,15 @@ class EmailViewerModule {
             // Fallback: direct API call
             try {
                 const emails = await window.apiClient.getEmails();
-                Logger.info('Emails loaded:', emails);
+                window.Logger.info('Emails loaded:', emails);
             } catch (error) {
-                Logger.error('Failed to load emails:', error);
+                window.Logger.error('Failed to load emails:', error);
             }
         }
     }
 
     async refreshEmails() {
-        Logger.info('Refreshing emails');
+        window.Logger.info('Refreshing emails');
         await this.loadEmails();
         
         this.eventBus.emit(ModuleEvents.UI_NOTIFICATION, {
@@ -272,7 +272,7 @@ class EmailViewerModule {
     }
 
     async destroy() {
-        Logger.info('Destroying Email Viewer module');
+        window.Logger.info('Destroying Email Viewer module');
         
         // Clean up event listeners
         this.eventBus.off(ModuleEvents.AUTH_LOGIN);
@@ -308,4 +308,4 @@ class EmailViewerModule {
 // Register module
 window['email-viewerModule'] = new EmailViewerModule();
 
-Logger.info('Email Viewer module loaded');
+window.Logger.info('Email Viewer module loaded');
