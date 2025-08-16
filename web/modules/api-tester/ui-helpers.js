@@ -75,3 +75,6 @@ class UIHelpers {
         return isConnected;
     }
 }
+
+// Export for use in other scripts
+window.UIHelpers = UIHelpers;

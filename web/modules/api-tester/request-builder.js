@@ -17,7 +17,10 @@ class RequestBuilder {
         });
 
         // Setup execute button
-        document.getElementById('execute-btn').addEventListener('click', () => this.executeRequest());
+        const executeBtn = document.getElementById('execute-btn');
+        if (executeBtn) {
+            executeBtn.addEventListener('click', () => this.executeRequest());
+        }
         
         // Setup headers functionality
         this.setupHeaders();
@@ -30,11 +33,11 @@ class RequestBuilder {
         const pathSection = document.getElementById('path-params-section');
         const pathContainer = document.getElementById('path-params');
         
-        if (pathParams.length > 0) {
+        if (pathParams.length > 0 && pathSection && pathContainer) {
             pathSection.classList.remove('hidden');
             pathContainer.innerHTML = this.uiBuilder.buildParameterInputs(pathParams, 'path');
             this.addValidationListeners(pathParams, 'path');
-        } else {
+        } else if (pathSection) {
             pathSection.classList.add('hidden');
         }
         
@@ -43,11 +46,11 @@ class RequestBuilder {
         const querySection = document.getElementById('query-params-section');
         const queryContainer = document.getElementById('query-params');
         
-        if (queryParams.length > 0) {
+        if (queryParams.length > 0 && querySection && queryContainer) {
             querySection.classList.remove('hidden');
             queryContainer.innerHTML = this.uiBuilder.buildParameterInputs(queryParams, 'query');
             this.addValidationListeners(queryParams, 'query');
-        } else {
+        } else if (querySection) {
             querySection.classList.add('hidden');
         }
         
@@ -342,13 +345,21 @@ class RequestBuilder {
 
     // Setup headers functionality
     setupHeaders() {
-        document.getElementById('add-header').addEventListener('click', () => this.addHeaderInput());
-        document.getElementById('headers-toggle').addEventListener('click', () => this.toggleHeadersSection());
+        const addHeaderBtn = document.getElementById('add-header');
+        if (addHeaderBtn) {
+            addHeaderBtn.addEventListener('click', () => this.addHeaderInput());
+        }
+        
+        const headersToggle = document.getElementById('headers-toggle');
+        if (headersToggle) {
+            headersToggle.addEventListener('click', () => this.toggleHeadersSection());
+        }
     }
 
     // Add header input row
     addHeaderInput() {
         const container = document.getElementById('headers');
+        if (!container) return;
         const newRow = document.createElement('div');
         newRow.className = 'flex space-x-2';
         newRow.innerHTML = `
@@ -395,3 +406,6 @@ class RequestBuilder {
         document.getElementById('headers-count').textContent = `(${count})`;
     }
 }
+
+// Export for use in other scripts
+window.RequestBuilder = RequestBuilder;

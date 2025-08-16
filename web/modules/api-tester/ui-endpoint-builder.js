@@ -93,3 +93,6 @@ class UIEndpointBuilder {
         return path.replace('/api/v1', '').replace(/{([^}]+)}/g, ':$1');
     }
 }
+
+// Export for use in other scripts
+window.UIEndpointBuilder = UIEndpointBuilder;

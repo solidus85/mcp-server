@@ -87,19 +87,41 @@ class EndpointsManager {
 
     // Select an endpoint
     selectEndpoint(path, method) {
+        if (!path || !method) {
+            console.error('Path and method are required');
+            return null;
+        }
+        
+        if (!this.openApiSpec || !this.openApiSpec.paths || !this.openApiSpec.paths[path]) {
+            console.error('Invalid path:', path);
+            return null;
+        }
+        
         // Update active state
         document.querySelectorAll('.endpoint-item').forEach(item => {
             item.classList.remove('active');
         });
-        document.querySelector(`[data-path="${path}"][data-method="${method}"]`).classList.add('active');
+        
+        const activeItem = document.querySelector(`[data-path="${path}"][data-method="${method}"]`);
+        if (activeItem) {
+            activeItem.classList.add('active');
+        }
         
         // Get endpoint data
         const endpointData = this.openApiSpec.paths[path][method.toLowerCase()];
+        if (!endpointData) {
+            console.error('Endpoint data not found for:', path, method);
+            return null;
+        }
+        
         this.currentEndpoint = { path, method, data: endpointData };
         
         // Show testing panel
-        document.getElementById('welcome-screen').classList.add('hidden');
-        document.getElementById('testing-panel').classList.remove('hidden');
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const testingPanel = document.getElementById('testing-panel');
+        
+        if (welcomeScreen) welcomeScreen.classList.add('hidden');
+        if (testingPanel) testingPanel.classList.remove('hidden');
         
         // Update endpoint info
         this.updateEndpointInfo(path, method, endpointData);
@@ -115,27 +137,50 @@ class EndpointsManager {
 
     // Update endpoint information display
     updateEndpointInfo(path, method, data) {
+        if (!path || !method || !data) {
+            console.error('Invalid endpoint info');
+            return;
+        }
+        
         // Method badge
         const methodBadge = document.getElementById('method-badge');
-        methodBadge.textContent = method;
-        methodBadge.className = `px-3 py-1 text-xs font-bold rounded method-${method.toLowerCase()}`;
+        if (methodBadge) {
+            methodBadge.textContent = method;
+            methodBadge.className = `px-3 py-1 text-xs font-bold rounded method-${method.toLowerCase()}`;
+        }
         
         // Path
-        document.getElementById('endpoint-path').textContent = path;
+        const endpointPath = document.getElementById('endpoint-path');
+        if (endpointPath) {
+            endpointPath.textContent = path;
+        }
         
         // Summary and description
-        document.getElementById('endpoint-summary').textContent = data.summary || 'No summary';
-        document.getElementById('endpoint-description').textContent = data.description || '';
+        const endpointSummary = document.getElementById('endpoint-summary');
+        if (endpointSummary) {
+            endpointSummary.textContent = data.summary || 'No summary';
+        }
+        
+        const endpointDescription = document.getElementById('endpoint-description');
+        if (endpointDescription) {
+            endpointDescription.textContent = data.description || '';
+        }
         
         // Operation ID
-        document.getElementById('operation-id').textContent = data.operationId || 'N/A';
+        const operationId = document.getElementById('operation-id');
+        if (operationId) {
+            operationId.textContent = data.operationId || 'N/A';
+        }
     }
 
     // Setup search functionality
     setupSearch() {
-        document.getElementById('endpoint-search').addEventListener('input', (e) => {
-            this.filterEndpoints(e.target.value);
-        });
+        const searchInput = document.getElementById('endpoint-search');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.filterEndpoints(e.target.value);
+            });
+        }
     }
 
     // Filter endpoints based on search
@@ -165,3 +210,6 @@ class EndpointsManager {
         return this.openApiSpec;
     }
 }
+
+// Export for use in other scripts
+window.EndpointsManager = EndpointsManager;

@@ -26,6 +26,10 @@ class APIClient {
     }
 
     async login(username, password) {
+        if (!username || !password) {
+            throw new Error('Username and password are required');
+        }
+        
         console.log('login: Attempting login with username:', username);
         try {
             const url = `${this.baseUrl}/api/v1/auth/login`;
@@ -61,20 +65,26 @@ class APIClient {
     }
 
     async makeRequest(method, path, options = {}) {
+        if (!method || !path) {
+            throw new Error('Method and path are required');
+        }
+        
         const startTime = Date.now();
         
         // Build full URL
         let url = `${this.baseUrl}${path}`;
         
         // Handle path parameters
-        if (options.pathParams) {
+        if (options.pathParams && typeof options.pathParams === 'object') {
             Object.entries(options.pathParams).forEach(([key, value]) => {
-                url = url.replace(`{${key}}`, encodeURIComponent(value));
+                if (value !== undefined && value !== null) {
+                    url = url.replace(`{${key}}`, encodeURIComponent(value));
+                }
             });
         }
         
         // Handle query parameters
-        if (options.queryParams) {
+        if (options.queryParams && typeof options.queryParams === 'object') {
             const params = new URLSearchParams();
             Object.entries(options.queryParams).forEach(([key, value]) => {
                 if (value !== '' && value !== null && value !== undefined) {

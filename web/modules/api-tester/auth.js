@@ -154,3 +154,6 @@ class AuthManager {
         }
     }
 }
+
+// Export for use in other scripts
+window.AuthManager = AuthManager;

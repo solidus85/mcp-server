@@ -24,7 +24,10 @@ class ResponseHandler {
         });
 
         // Setup clear history button
-        document.getElementById('clear-history').addEventListener('click', () => this.clearRequestHistory());
+        const clearHistoryBtn = document.getElementById('clear-history');
+        if (clearHistoryBtn) {
+            clearHistoryBtn.addEventListener('click', () => this.clearRequestHistory());
+        }
         
         // Load initial history
         this.loadRequestHistory();
@@ -33,47 +36,66 @@ class ResponseHandler {
     // Display response
     displayResponse(response) {
         // Show response section
-        document.getElementById('response-status').classList.remove('hidden');
-        document.getElementById('response-placeholder').classList.add('hidden');
-        document.getElementById('response-body').classList.remove('hidden');
+        const responseStatus = document.getElementById('response-status');
+        const responsePlaceholder = document.getElementById('response-placeholder');
+        const responseBodyEl = document.getElementById('response-body');
+        
+        if (responseStatus) responseStatus.classList.remove('hidden');
+        if (responsePlaceholder) responsePlaceholder.classList.add('hidden');
+        if (responseBodyEl) responseBodyEl.classList.remove('hidden');
         
         // Update status
         const statusCode = document.getElementById('status-code');
-        statusCode.textContent = `${response.status} ${response.statusText}`;
-        statusCode.className = `font-bold ${this.uiBuilder.getStatusClass(response.status)}`;
+        if (statusCode) {
+            statusCode.textContent = `${response.status} ${response.statusText}`;
+            statusCode.className = `font-bold ${this.uiBuilder.getStatusClass(response.status)}`;
+        }
         
         // Update response time
-        document.getElementById('response-time').textContent = `${response.responseTime}ms`;
+        const responseTime = document.getElementById('response-time');
+        if (responseTime) {
+            responseTime.textContent = `${response.responseTime}ms`;
+        }
         
         // Update response body
         const responseBody = document.querySelector('#response-body code');
-        const formattedData = typeof response.data === 'string' 
-            ? response.data 
-            : JSON.stringify(response.data, null, 2);
-        
-        responseBody.textContent = formattedData;
+        if (responseBody) {
+            const formattedData = typeof response.data === 'string' 
+                ? response.data 
+                : JSON.stringify(response.data, null, 2);
+            
+            responseBody.textContent = formattedData;
+        }
         
         // Highlight code if Prism is available
-        if (typeof Prism !== 'undefined') {
+        if (typeof Prism !== 'undefined' && responseBody) {
             Prism.highlightElement(responseBody);
         }
     }
 
     // Display error
     displayError(error) {
-        document.getElementById('response-status').classList.remove('hidden');
-        document.getElementById('response-placeholder').classList.add('hidden');
-        document.getElementById('response-body').classList.remove('hidden');
+        const responseStatus = document.getElementById('response-status');
+        const responsePlaceholder = document.getElementById('response-placeholder');
+        const responseBodyEl = document.getElementById('response-body');
+        
+        if (responseStatus) responseStatus.classList.remove('hidden');
+        if (responsePlaceholder) responsePlaceholder.classList.add('hidden');
+        if (responseBodyEl) responseBodyEl.classList.remove('hidden');
         
         const statusCode = document.getElementById('status-code');
-        statusCode.textContent = 'Error';
-        statusCode.className = 'font-bold status-client-error';
+        if (statusCode) {
+            statusCode.textContent = 'Error';
+            statusCode.className = 'font-bold status-client-error';
+        }
         
         const responseBody = document.querySelector('#response-body code');
-        responseBody.textContent = JSON.stringify({ error: error.message }, null, 2);
+        if (responseBody) {
+            responseBody.textContent = JSON.stringify({ error: error.message }, null, 2);
+        }
         
         // Highlight code if Prism is available
-        if (typeof Prism !== 'undefined') {
+        if (typeof Prism !== 'undefined' && responseBody) {
             Prism.highlightElement(responseBody);
         }
     }
@@ -121,3 +143,6 @@ class ResponseHandler {
         }
     }
 }
+
+// Export for use in other scripts
+window.ResponseHandler = ResponseHandler;
