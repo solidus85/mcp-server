@@ -1,9 +1,23 @@
 // Shared Utility Functions
 
+/**
+ * Utility functions for common operations
+ * @namespace Utils
+ */
 const Utils = {
-    // Format date for display
+    /**
+     * Format date for display with relative time
+     * @param {string|Date} dateString - Date to format
+     * @returns {string} - Formatted date string
+     */
     formatDate(dateString) {
+        if (!dateString) return '';
+        
         const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+            return 'Invalid date';
+        }
+        
         const now = new Date();
         const diff = now - date;
         const seconds = Math.floor(diff / 1000);
@@ -73,28 +87,101 @@ const Utils = {
         return colors[Math.abs(hash) % colors.length];
     },
     
-    // Escape HTML
+    /**
+     * Escape HTML to prevent XSS attacks
+     * @param {string} text - Text to escape
+     * @returns {string} - Escaped HTML string
+     */
     escapeHtml(text) {
+        if (typeof text !== 'string') {
+            return '';
+        }
+        
         const map = {
             '&': '&amp;',
             '<': '&lt;',
             '>': '&gt;',
             '"': '&quot;',
-            "'": '&#039;'
+            "'": '&#039;',
+            '/': '&#x2F;',
+            '`': '&#x60;',
+            '=': '&#x3D;'
         };
-        return text ? text.replace(/[&<>"']/g, m => map[m]) : '';
+        return text.replace(/[&<>"'`=\/]/g, m => map[m]);
     },
     
-    // Debounce function
-    debounce(func, wait) {
+    /**
+     * Sanitize user input for safe display
+     * @param {string} input - User input to sanitize
+     * @param {Object} options - Sanitization options
+     * @returns {string} - Sanitized string
+     */
+    sanitizeInput(input, options = {}) {
+        if (typeof input !== 'string') {
+            return '';
+        }
+        
+        let sanitized = input;
+        
+        // Remove null bytes
+        sanitized = sanitized.replace(/\0/g, '');
+        
+        // Strip HTML tags if specified
+        if (options.stripHtml) {
+            sanitized = sanitized.replace(/<[^>]*>/g, '');
+        }
+        
+        // Limit length
+        if (options.maxLength) {
+            sanitized = sanitized.substring(0, options.maxLength);
+        }
+        
+        // Escape HTML entities
+        if (!options.allowHtml) {
+            sanitized = this.escapeHtml(sanitized);
+        }
+        
+        return sanitized.trim();
+    },
+    
+    /**
+     * Debounce function to limit execution rate
+     * @param {Function} func - Function to debounce
+     * @param {number} wait - Wait time in milliseconds
+     * @param {boolean} immediate - Execute immediately on first call
+     * @returns {Function} - Debounced function
+     */
+    debounce(func, wait, immediate = false) {
         let timeout;
         return function executedFunction(...args) {
             const later = () => {
                 clearTimeout(timeout);
-                func(...args);
+                timeout = null;
+                if (!immediate) func.apply(this, args);
             };
+            
+            const callNow = immediate && !timeout;
             clearTimeout(timeout);
             timeout = setTimeout(later, wait);
+            
+            if (callNow) func.apply(this, args);
+        };
+    },
+    
+    /**
+     * Throttle function to limit execution rate
+     * @param {Function} func - Function to throttle
+     * @param {number} limit - Time limit in milliseconds
+     * @returns {Function} - Throttled function
+     */
+    throttle(func, limit) {
+        let inThrottle;
+        return function(...args) {
+            if (!inThrottle) {
+                func.apply(this, args);
+                inThrottle = true;
+                setTimeout(() => inThrottle = false, limit);
+            }
         };
     },
     

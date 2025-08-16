@@ -1,12 +1,18 @@
 // Module Loader System
 // Handles dynamic loading and lifecycle management of application modules
 
+/**
+ * ModuleLoader manages the lifecycle of application modules
+ * @class
+ */
 class ModuleLoader {
     constructor() {
         this.modules = new Map();
         this.currentModule = null;
         this.moduleContainer = null;
-        this.eventBus = window.eventBus || new EventBus();
+        this.eventBus = window.eventBus || null;
+        this.loadedScripts = new Set();
+        this.cleanupFunctions = new Map();
     }
 
     async init(containerId) {
@@ -151,11 +157,29 @@ class ModuleLoader {
         }
     }
 
+    /**
+     * Load external script with caching
+     * @private
+     * @param {string} src - Script source URL
+     * @param {string} moduleId - Module identifier
+     * @returns {Promise} - Promise that resolves when script loads
+     */
     async loadScript(src, moduleId) {
+        // Validate input
+        if (!src || typeof src !== 'string') {
+            throw new Error('Invalid script source');
+        }
+        
         return new Promise((resolve, reject) => {
             // Check if script is already loaded
+            if (this.loadedScripts.has(src)) {
+                resolve();
+                return;
+            }
+            
             const existingScript = document.querySelector(`script[src="${src}"]`);
             if (existingScript) {
+                this.loadedScripts.add(src);
                 resolve();
                 return;
             }
@@ -163,8 +187,23 @@ class ModuleLoader {
             const script = document.createElement('script');
             script.src = src;
             script.setAttribute('data-module', moduleId);
-            script.onload = resolve;
-            script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+            
+            const cleanup = () => {
+                script.onload = null;
+                script.onerror = null;
+            };
+            
+            script.onload = () => {
+                this.loadedScripts.add(src);
+                cleanup();
+                resolve();
+            };
+            
+            script.onerror = () => {
+                cleanup();
+                reject(new Error(`Failed to load script: ${src}`));
+            };
+            
             document.head.appendChild(script);
         });
     }
@@ -223,30 +262,60 @@ class ModuleLoader {
         this.eventBus.emit('module:activated', { moduleId, module });
     }
 
+    /**
+     * Deactivate a module and clean up resources
+     * @param {string} moduleId - Module identifier
+     * @returns {Promise} - Promise that resolves when module is deactivated
+     */
     async deactivateModule(moduleId) {
         const module = this.modules.get(moduleId);
         if (!module) {
             return;
         }
 
-        window.Logger.debug(`Deactivating module: ${moduleId}`);
+        if (window.Logger) {
+            window.Logger.debug(`Deactivating module: ${moduleId}`);
+        }
 
         // Call module's destroy method if it exists
         if (module.instance && typeof module.instance.destroy === 'function') {
             try {
                 await module.instance.destroy();
             } catch (error) {
-                window.Logger.error(`Error destroying module ${moduleId}:`, error);
+                if (window.Logger) {
+                    window.Logger.error(`Error destroying module ${moduleId}:`, error);
+                }
             }
         }
+        
+        // Run cleanup functions
+        if (this.cleanupFunctions.has(moduleId)) {
+            const cleanups = this.cleanupFunctions.get(moduleId);
+            for (const cleanup of cleanups) {
+                try {
+                    await cleanup();
+                } catch (error) {
+                    if (window.Logger) {
+                        window.Logger.error(`Error in cleanup for module ${moduleId}:`, error);
+                    }
+                }
+            }
+            this.cleanupFunctions.delete(moduleId);
+        }
 
-        // Hide module element
+        // Remove event listeners
         if (module.element) {
+            // Clone node to remove all event listeners
+            const newElement = module.element.cloneNode(true);
+            module.element.parentNode?.replaceChild(newElement, module.element);
+            module.element = newElement;
             module.element.classList.add('hidden');
         }
 
         // Emit module deactivated event
-        this.eventBus.emit('module:deactivated', { moduleId, module });
+        if (this.eventBus) {
+            this.eventBus.emit('module:deactivated', { moduleId, module });
+        }
     }
 
     getModule(moduleId) {
@@ -261,12 +330,34 @@ class ModuleLoader {
         return Array.from(this.modules.keys());
     }
 
+    /**
+     * Reload a module
+     * @param {string} moduleId - Module identifier
+     * @returns {Promise<Object>} - Reloaded module
+     */
     async reloadModule(moduleId) {
-        window.Logger.info(`Reloading module: ${moduleId}`);
+        if (window.Logger) {
+            window.Logger.info(`Reloading module: ${moduleId}`);
+        }
 
         // Deactivate if current
         if (this.currentModule === moduleId) {
             await this.deactivateModule(moduleId);
+        }
+
+        // Clean up old module completely
+        const oldModule = this.modules.get(moduleId);
+        if (oldModule) {
+            // Remove old scripts
+            const scripts = document.querySelectorAll(`script[data-module="${moduleId}"]`);
+            scripts.forEach(script => script.remove());
+            
+            // Clear from loaded scripts cache
+            this.loadedScripts.forEach(src => {
+                if (src.includes(moduleId)) {
+                    this.loadedScripts.delete(src);
+                }
+            });
         }
 
         // Remove from cache
@@ -281,6 +372,34 @@ class ModuleLoader {
         }
 
         return module;
+    }
+    
+    /**
+     * Register cleanup function for a module
+     * @param {string} moduleId - Module identifier
+     * @param {Function} cleanup - Cleanup function
+     */
+    registerCleanup(moduleId, cleanup) {
+        if (!this.cleanupFunctions.has(moduleId)) {
+            this.cleanupFunctions.set(moduleId, []);
+        }
+        this.cleanupFunctions.get(moduleId).push(cleanup);
+    }
+    
+    /**
+     * Destroy module loader and clean up all modules
+     */
+    async destroy() {
+        // Deactivate all modules
+        for (const moduleId of this.modules.keys()) {
+            await this.deactivateModule(moduleId);
+        }
+        
+        // Clear all data
+        this.modules.clear();
+        this.loadedScripts.clear();
+        this.cleanupFunctions.clear();
+        this.currentModule = null;
     }
 }
 

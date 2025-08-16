@@ -1,13 +1,26 @@
 // Shared API Client
 // Centralized API communication for all modules
 
+/**
+ * SharedApiClient handles all API communications for the application
+ * Features: automatic retry, token refresh, request queuing, WebSocket support
+ * @class
+ */
 class SharedApiClient {
     constructor() {
+        // Validate dependencies
+        if (!window.AppConfig?.api?.baseUrl) {
+            throw new Error('AppConfig.api.baseUrl is required');
+        }
+        
         this.baseUrl = window.AppConfig.api.baseUrl;
-        this.authService = window.authService;
-        this.eventBus = window.eventBus;
+        this.authService = window.authService || null;
+        this.eventBus = window.eventBus || null;
         this.requestQueue = [];
         this.isProcessingQueue = false;
+        this.activeRequests = new Map();
+        this.requestTimeout = window.AppConfig.api?.timeout || 30000;
+        this.maxRetries = window.AppConfig.api?.maxRetries || 3;
     }
 
     // Get headers for requests
@@ -21,14 +34,30 @@ class SharedApiClient {
         return headers;
     }
 
-    // Generic fetch wrapper with error handling and events
+    /**
+     * Generic fetch wrapper with error handling and events
+     * @param {string} endpoint - API endpoint or full URL
+     * @param {Object} options - Fetch options
+     * @returns {Promise<any>} - Response data
+     * @throws {Error} - API errors or network errors
+     */
     async fetch(endpoint, options = {}) {
+        // Input validation
+        if (typeof endpoint !== 'string' || !endpoint.trim()) {
+            throw new Error('Invalid endpoint provided');
+        }
+        
         const url = endpoint.startsWith('http') ? endpoint : `${this.baseUrl}${endpoint}`;
+        
+        // Create AbortController for timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), this.requestTimeout);
         
         // Prepare options
         const fetchOptions = {
             ...options,
-            headers: this.getHeaders(options.headers)
+            headers: this.getHeaders(options.headers),
+            signal: controller.signal
         };
 
         // Remove Content-Type for FormData
@@ -43,7 +72,18 @@ class SharedApiClient {
         });
 
         try {
-            const response = await fetch(url, fetchOptions);
+            // Check for duplicate requests
+            const requestKey = `${fetchOptions.method || 'GET'}-${url}`;
+            if (this.activeRequests.has(requestKey) && fetchOptions.method === 'GET') {
+                return await this.activeRequests.get(requestKey);
+            }
+            
+            const responsePromise = fetch(url, fetchOptions);
+            if (fetchOptions.method === 'GET') {
+                this.activeRequests.set(requestKey, responsePromise);
+            }
+            
+            const response = await responsePromise;
 
             // Handle authentication errors
             if (response.status === 401) {
@@ -64,18 +104,37 @@ class SharedApiClient {
             return this.handleResponse(response, url);
 
         } catch (error) {
+            // Handle abort error
+            if (error.name === 'AbortError') {
+                const timeoutError = new Error(`Request timeout after ${this.requestTimeout}ms`);
+                timeoutError.code = 'TIMEOUT';
+                throw timeoutError;
+            }
+            
             // Emit request error event
-            this.eventBus.emit(ModuleEvents.API_REQUEST_ERROR, {
-                url,
-                error: error.message
-            });
+            if (this.eventBus) {
+                this.eventBus.emit(ModuleEvents.API_REQUEST_ERROR, {
+                    url,
+                    error: error.message
+                });
+            }
 
-            window.Logger.error('API request failed:', error);
+            if (window.Logger) {
+                window.Logger.error('API request failed:', error);
+            }
             throw error;
 
         } finally {
+            clearTimeout(timeoutId);
+            
+            // Clean up active requests
+            const requestKey = `${fetchOptions.method || 'GET'}-${url}`;
+            this.activeRequests.delete(requestKey);
+            
             // Emit request end event
-            this.eventBus.emit(ModuleEvents.API_REQUEST_END, { url });
+            if (this.eventBus) {
+                this.eventBus.emit(ModuleEvents.API_REQUEST_END, { url });
+            }
         }
     }
 
@@ -320,29 +379,67 @@ class SharedApiClient {
         this.isProcessingQueue = false;
     }
 
-    // WebSocket connection
-    createWebSocket(endpoint) {
-        const wsUrl = this.baseUrl.replace(/^http/, 'ws') + endpoint;
-        const token = this.authService.getToken();
+    /**
+     * Create WebSocket connection with automatic reconnection
+     * @param {string} endpoint - WebSocket endpoint
+     * @param {Object} options - WebSocket options
+     * @returns {WebSocket} - WebSocket instance
+     */
+    createWebSocket(endpoint, options = {}) {
+        if (!endpoint || typeof endpoint !== 'string') {
+            throw new Error('Invalid WebSocket endpoint');
+        }
         
-        // Add token to URL
-        const url = token ? `${wsUrl}?token=${token}` : wsUrl;
+        const wsUrl = this.baseUrl.replace(/^http/, 'ws') + endpoint;
+        const token = this.authService?.getToken();
+        
+        // Add token to URL securely
+        const url = token ? `${wsUrl}?token=${encodeURIComponent(token)}` : wsUrl;
         
         const ws = new WebSocket(url);
 
+        // Add automatic reconnection
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = options.maxReconnects || 5;
+        const reconnectDelay = options.reconnectDelay || 1000;
+        
         ws.onopen = () => {
-            window.Logger.info('WebSocket connected:', endpoint);
-            this.eventBus.emit('websocket:connected', { endpoint });
+            reconnectAttempts = 0;
+            if (window.Logger) {
+                window.Logger.info('WebSocket connected:', endpoint);
+            }
+            if (this.eventBus) {
+                this.eventBus.emit('websocket:connected', { endpoint });
+            }
         };
 
-        ws.onclose = () => {
-            window.Logger.info('WebSocket disconnected:', endpoint);
-            this.eventBus.emit('websocket:disconnected', { endpoint });
+        ws.onclose = (event) => {
+            if (window.Logger) {
+                window.Logger.info('WebSocket disconnected:', endpoint, event.code, event.reason);
+            }
+            if (this.eventBus) {
+                this.eventBus.emit('websocket:disconnected', { endpoint, code: event.code, reason: event.reason });
+            }
+            
+            // Attempt reconnection if not closed intentionally
+            if (event.code !== 1000 && reconnectAttempts < maxReconnectAttempts) {
+                reconnectAttempts++;
+                setTimeout(() => {
+                    if (window.Logger) {
+                        window.Logger.info(`Attempting WebSocket reconnection ${reconnectAttempts}/${maxReconnectAttempts}`);
+                    }
+                    this.createWebSocket(endpoint, options);
+                }, reconnectDelay * Math.pow(2, reconnectAttempts - 1));
+            }
         };
 
         ws.onerror = (error) => {
-            window.Logger.error('WebSocket error:', error);
-            this.eventBus.emit('websocket:error', { endpoint, error });
+            if (window.Logger) {
+                window.Logger.error('WebSocket error:', error);
+            }
+            if (this.eventBus) {
+                this.eventBus.emit('websocket:error', { endpoint, error });
+            }
         };
 
         return ws;

@@ -1,23 +1,37 @@
 // Shared Authentication Service
 // Centralized authentication management for all modules
 
+/**
+ * AuthService manages authentication state and token lifecycle
+ * @class
+ */
 class AuthService {
     constructor() {
         this.token = null;
         this.user = null;
         this.isAuthenticated = false;
-        this.eventBus = window.eventBus || new EventBus();
-        this.storage = window.Storage;
-        this.config = window.AppConfig.auth;
+        this.eventBus = window.eventBus || null;
+        this.storage = window.Storage || null;
+        this.config = window.AppConfig?.auth || {};
+        this.refreshTimer = null;
+        this.tokenValidationCache = new Map();
         
         // Initialize from storage
         this.loadFromStorage();
     }
 
-    // Initialize authentication state from storage
+    /**
+     * Initialize authentication state from storage
+     * @private
+     */
     loadFromStorage() {
-        const storedToken = this.storage.get(this.config.tokenKey);
-        const storedUser = this.storage.get(this.config.userKey);
+        if (!this.storage) {
+            console.warn('Storage not available, authentication state will not persist');
+            return;
+        }
+        
+        const storedToken = this.storage.get(this.config.tokenKey || 'authToken');
+        const storedUser = this.storage.get(this.config.userKey || 'currentUser');
 
         if (storedToken) {
             this.token = storedToken;
@@ -45,15 +59,32 @@ class AuthService {
         }
     }
 
-    // Login with username and password
+    /**
+     * Login with username and password
+     * @param {string} username - User's username
+     * @param {string} password - User's password
+     * @returns {Promise<Object>} - Login response with user data
+     * @throws {Error} - Login errors
+     */
     async login(username, password) {
+        // Input validation
+        if (!username || !password) {
+            throw new Error('Username and password are required');
+        }
+        
+        // Sanitize inputs
+        const sanitizedUsername = username.trim().substring(0, 100);
+        
         try {
             const response = await fetch(`${window.AppConfig.api.baseUrl}/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ username, password })
+                body: JSON.stringify({ 
+                    username: sanitizedUsername, 
+                    password 
+                })
             });
 
             if (!response.ok) {
@@ -122,10 +153,25 @@ class AuthService {
         this.eventBus.emit(ModuleEvents.AUTH_LOGIN, { user, token });
     }
 
-    // Set token directly (for manual token entry)
+    /**
+     * Set token directly (for manual token entry)
+     * @param {string} token - Authentication token
+     * @throws {Error} - If token is invalid
+     */
     setToken(token) {
+        if (!token || typeof token !== 'string') {
+            throw new Error('Invalid token provided');
+        }
+        
+        // Basic token validation
+        if (token.length < 10) {
+            throw new Error('Token appears to be invalid');
+        }
+        
         this.setAuthData(token);
-        window.Logger.info('Token set manually');
+        if (window.Logger) {
+            window.Logger.info('Token set manually');
+        }
     }
 
     // Logout
@@ -160,11 +206,24 @@ class AuthService {
         return this.isAuthenticated && !this.isTokenExpired();
     }
 
-    // Check if token is expired
+    /**
+     * Check if token is expired
+     * @returns {boolean} - True if token is expired
+     */
     isTokenExpired() {
+        if (!this.storage) {
+            return false;
+        }
+        
         const expiry = this.storage.get('tokenExpiry');
         if (!expiry) {
-            return false; // No expiry set, assume valid
+            // If no expiry is set, check token age
+            const tokenAge = this.storage.get('tokenSetTime');
+            if (tokenAge) {
+                const maxAge = this.config.tokenExpiry || (30 * 60 * 1000);
+                return Date.now() - tokenAge > maxAge;
+            }
+            return false;
         }
         return Date.now() > expiry;
     }
@@ -305,33 +364,59 @@ class AuthService {
         }
     }
 
-    // Setup auto-refresh timer
+    /**
+     * Setup auto-refresh timer
+     * @private
+     */
     setupAutoRefresh() {
         // Clear existing timer
-        if (this.refreshTimer) {
-            clearInterval(this.refreshTimer);
+        this.clearAutoRefresh();
+
+        // Don't setup if no token
+        if (!this.token) {
+            return;
         }
 
-        // Set up new timer (refresh 5 minutes before expiry)
-        const refreshInterval = this.config.tokenExpiry - (5 * 60 * 1000);
+        // Calculate refresh interval (refresh 5 minutes before expiry)
+        const tokenExpiry = this.config.tokenExpiry || (30 * 60 * 1000);
+        const refreshInterval = Math.max(tokenExpiry - (5 * 60 * 1000), 60000); // Minimum 1 minute
         
         this.refreshTimer = setInterval(async () => {
-            if (this.isLoggedIn() && this.isTokenExpired()) {
-                try {
-                    await this.refreshToken();
-                } catch (error) {
-                    window.Logger.error('Auto-refresh failed:', error);
+            if (this.isLoggedIn()) {
+                // Check if we're approaching expiry
+                const expiry = this.storage?.get('tokenExpiry');
+                const timeToExpiry = expiry ? expiry - Date.now() : Infinity;
+                
+                if (timeToExpiry < (5 * 60 * 1000)) {
+                    try {
+                        await this.refreshToken();
+                    } catch (error) {
+                        if (window.Logger) {
+                            window.Logger.error('Auto-refresh failed:', error);
+                        }
+                    }
                 }
             }
         }, refreshInterval);
     }
 
-    // Clear auto-refresh timer
+    /**
+     * Clear auto-refresh timer
+     * @private
+     */
     clearAutoRefresh() {
         if (this.refreshTimer) {
             clearInterval(this.refreshTimer);
             this.refreshTimer = null;
         }
+    }
+    
+    /**
+     * Cleanup resources
+     */
+    destroy() {
+        this.clearAutoRefresh();
+        this.tokenValidationCache.clear();
     }
 }
 
