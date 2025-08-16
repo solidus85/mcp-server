@@ -22,15 +22,32 @@ class ResponseHandler {
         window.addEventListener('reloadHistory', () => {
             this.loadRequestHistory();
         });
-
-        // Setup clear history button
-        const clearHistoryBtn = document.getElementById('clear-history');
-        if (clearHistoryBtn) {
-            clearHistoryBtn.addEventListener('click', () => this.clearRequestHistory());
-        }
         
-        // Load initial history
-        this.loadRequestHistory();
+        // Listen for endpoint selection to load history when panel becomes visible
+        window.addEventListener('endpointSelected', () => {
+            // Defer to next tick to ensure DOM is updated
+            setTimeout(() => {
+                this.loadRequestHistory();
+                
+                // Setup clear history button if not already done
+                this.setupClearHistoryButton();
+            }, 0);
+        });
+
+        // Try to setup clear history button (may not exist yet)
+        this.setupClearHistoryButton();
+        
+        // Don't load history initially as the panel isn't visible yet
+        // It will be loaded when an endpoint is selected
+    }
+    
+    // Setup clear history button
+    setupClearHistoryButton() {
+        const clearHistoryBtn = document.getElementById('clear-history');
+        if (clearHistoryBtn && !clearHistoryBtn.hasAttribute('data-listener-attached')) {
+            clearHistoryBtn.addEventListener('click', () => this.clearRequestHistory());
+            clearHistoryBtn.setAttribute('data-listener-attached', 'true');
+        }
     }
 
     // Display response
@@ -105,9 +122,13 @@ class ResponseHandler {
         const history = this.apiClient.getHistory();
         const container = document.getElementById('history-list');
         
-        // Return early if container doesn't exist
+        // Return early if container doesn't exist (silently, as it may not be rendered yet)
         if (!container) {
-            console.warn('History list container not found');
+            // Only warn if we're in the testing panel (i.e., an endpoint is selected)
+            const testingPanel = document.getElementById('testing-panel');
+            if (testingPanel && !testingPanel.classList.contains('hidden')) {
+                console.warn('History list container not found despite testing panel being visible');
+            }
             return;
         }
         
