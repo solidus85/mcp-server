@@ -262,6 +262,10 @@ class RequestBuilder {
         }
         
         const btn = document.getElementById('execute-btn');
+        if (!btn) {
+            console.error('Execute button not found');
+            return;
+        }
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner"></span> Executing...';
         
@@ -302,8 +306,10 @@ class RequestBuilder {
             const event = new CustomEvent('requestError', { detail: error });
             window.dispatchEvent(event);
         } finally {
-            btn.disabled = false;
-            btn.innerHTML = 'Execute';
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = 'Execute';
+            }
             // Trigger history reload
             window.dispatchEvent(new CustomEvent('reloadHistory'));
         }

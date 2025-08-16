@@ -105,6 +105,12 @@ class ResponseHandler {
         const history = this.apiClient.getHistory();
         const container = document.getElementById('history-list');
         
+        // Return early if container doesn't exist
+        if (!container) {
+            console.warn('History list container not found');
+            return;
+        }
+        
         if (history.length === 0) {
             container.innerHTML = `
                 <div class="text-center py-4 text-gray-500 dark:text-gray-400">
@@ -126,6 +132,11 @@ class ResponseHandler {
             
             // Show a temporary success message
             const container = document.getElementById('history-list');
+            if (!container) {
+                console.warn('History list container not found');
+                return;
+            }
+            
             container.innerHTML = `
                 <div class="text-center py-4 text-green-500 dark:text-green-400">
                     History cleared successfully!
@@ -134,11 +145,14 @@ class ResponseHandler {
             
             // After 2 seconds, show the normal empty state
             setTimeout(() => {
-                container.innerHTML = `
-                    <div class="text-center py-4 text-gray-500 dark:text-gray-400">
-                        No requests yet
-                    </div>
-                `;
+                const container = document.getElementById('history-list');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                            No requests yet
+                        </div>
+                    `;
+                }
             }, 2000);
         }
     }

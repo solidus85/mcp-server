@@ -15,7 +15,9 @@ class EndpointsManager {
             
             // Build endpoints list
             const endpointsList = document.getElementById('endpoints-list');
-            endpointsList.innerHTML = this.uiBuilder.buildEndpointsList(this.openApiSpec);
+            if (endpointsList) {
+                endpointsList.innerHTML = this.uiBuilder.buildEndpointsList(this.openApiSpec);
+            }
             
             // Update statistics
             this.updateStatistics();
@@ -30,11 +32,14 @@ class EndpointsManager {
             
         } catch (error) {
             console.error('Failed to load OpenAPI spec:', error);
-            document.getElementById('endpoints-list').innerHTML = `
-                <div class="text-center py-8 text-red-500">
-                    Failed to load API specification
-                </div>
-            `;
+            const endpointsList = document.getElementById('endpoints-list');
+            if (endpointsList) {
+                endpointsList.innerHTML = `
+                    <div class="text-center py-8 text-red-500">
+                        Failed to load API specification
+                    </div>
+                `;
+            }
             throw error;
         }
     }
