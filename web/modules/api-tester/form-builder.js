@@ -249,6 +249,3 @@ class FormBuilder {
         return this.renderer.buildParameterField(param, type);
     }
 }
-
-// Create global instance
-window.formBuilder = new FormBuilder();

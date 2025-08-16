@@ -11,6 +11,11 @@ let uiHelpers;
 
 // Initialize function that can be called directly
 async function initApiTesterApp() {
+    // Initialize form builder first (needed by UI components)
+    if (typeof FormBuilder !== 'undefined') {
+        window.formBuilder = new FormBuilder();
+    }
+    
     // Initialize core services (these are defined in external scripts)
     apiClient = new APIClient();
     uiBuilder = new UIBuilder();

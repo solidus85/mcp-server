@@ -22,11 +22,14 @@ class UIHelpers {
             document.documentElement.classList.add('dark');
         }
         
-        document.getElementById('theme-toggle').addEventListener('click', () => {
-            document.documentElement.classList.toggle('dark');
-            const newTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-            localStorage.setItem('theme', newTheme);
-        });
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+                const newTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+                localStorage.setItem('theme', newTheme);
+            });
+        }
     }
 
     // Update base URL from saved value
@@ -35,20 +38,25 @@ class UIHelpers {
         // If the saved URL is the old default, update it to the new one
         if (savedUrl === 'http://localhost:8000') {
             localStorage.setItem('baseUrl', 'http://localhost:8010');
-            document.getElementById('base-url').value = 'http://localhost:8010';
+            const baseUrlInput = document.getElementById('base-url');
+            if (baseUrlInput) baseUrlInput.value = 'http://localhost:8010';
             this.apiClient.setBaseUrl('http://localhost:8010');
         } else if (savedUrl) {
-            document.getElementById('base-url').value = savedUrl;
+            const baseUrlInput = document.getElementById('base-url');
+            if (baseUrlInput) baseUrlInput.value = savedUrl;
         }
         // If no saved URL, the HTML default (8010) will be used
     }
 
     // Setup base URL change listener
     setupBaseUrlListener() {
-        document.getElementById('base-url').addEventListener('change', (e) => {
+        const baseUrlInput = document.getElementById('base-url');
+        if (baseUrlInput) {
+            baseUrlInput.addEventListener('change', (e) => {
             this.apiClient.setBaseUrl(e.target.value);
-            this.testConnection();
-        });
+                this.testConnection();
+            });
+        }
     }
 
     // Test connection to server
@@ -56,10 +64,10 @@ class UIHelpers {
         const isConnected = await this.apiClient.testConnection();
         const baseUrlInput = document.getElementById('base-url');
         
-        if (isConnected) {
+        if (baseUrlInput && isConnected) {
             baseUrlInput.classList.remove('border-red-500');
             baseUrlInput.classList.add('border-green-500');
-        } else {
+        } else if (baseUrlInput) {
             baseUrlInput.classList.remove('border-green-500');
             baseUrlInput.classList.add('border-red-500');
         }
