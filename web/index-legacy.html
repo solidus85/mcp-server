@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Server API Tester</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style type="text/tailwindcss">
+        @layer base {
+            /* Override Tailwind's base input styles */
+            input[type="text"],
+            input[type="password"],
+            input[type="email"],
+            input[type="number"],
+            input[type="url"],
+            input[type="search"],
+            textarea,
+            select {
+                background-color: white;
+                color: #111827;
+            }
+        }
+    </style>
+    
+    <!-- Prism for JSON syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    
+    <!-- Custom styles - loaded last for highest priority -->
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Final overrides to ensure visibility */
+        #base-url {
+            background-color: white !important;
+            color: #111827 !important;
+        }
+        .dark #base-url {
+            background-color: #374151 !important;
+            color: white !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 h-screen overflow-hidden">
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <div class="px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <h1 class="text-xl font-bold text-gray-900 dark:text-white">🚀 MCP Server API Tester</h1>
+                <span class="text-sm text-gray-500 dark:text-gray-400" id="api-version">v0.1.0</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <!-- Base URL Input -->
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm text-gray-600 dark:text-gray-400">Base URL:</label>
+                    <input type="text" id="base-url" value="http://localhost:8010" 
+                           class="px-3 py-1 text-sm border rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                </div>
+                
+                <!-- Auth Status -->
+                <div id="auth-status" class="flex items-center space-x-2">
+                    <span class="w-2 h-2 bg-red-500 rounded-full" id="auth-indicator"></span>
+                    <span class="text-sm text-gray-600 dark:text-gray-400" id="auth-text">Not authenticated</span>
+                </div>
+                
+                <!-- Auth Button -->
+                <button id="auth-btn" class="px-4 py-1 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                    Login
+                </button>
+                
+                <!-- Theme Toggle -->
+                <button id="theme-toggle" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main container with padding-top to account for fixed header -->
+    <div class="flex" style="height: calc(100vh - 3.5rem); margin-top: 3.5rem;">
+        <!-- Sidebar -->
+        <aside class="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+            <!-- Search -->
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                <input type="text" id="endpoint-search" placeholder="Search endpoints..." 
+                       class="w-full px-3 py-2 border rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            </div>
+            
+            <!-- Endpoints List -->
+            <div id="endpoints-list" class="p-4">
+                <!-- Endpoints will be loaded here -->
+                <div class="text-center py-8 text-gray-500">
+                    Loading endpoints...
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto">
+            <div class="p-6">
+                <!-- Welcome Screen (shown when no endpoint selected) -->
+                <div id="welcome-screen" class="text-center py-12">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Welcome to API Tester</h2>
+                    <p class="text-gray-600 dark:text-gray-400 mb-8">Select an endpoint from the sidebar to start testing</p>
+                    
+                    <div class="grid grid-cols-3 gap-4 max-w-2xl mx-auto">
+                        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                            <div class="text-3xl mb-2">📊</div>
+                            <div class="text-sm font-semibold text-gray-900 dark:text-white" id="total-endpoints">0</div>
+                            <div class="text-xs text-gray-500">Total Endpoints</div>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                            <div class="text-3xl mb-2">🏷️</div>
+                            <div class="text-sm font-semibold text-gray-900 dark:text-white" id="total-tags">0</div>
+                            <div class="text-xs text-gray-500">API Groups</div>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                            <div class="text-3xl mb-2">📝</div>
+                            <div class="text-sm font-semibold text-gray-900 dark:text-white" id="total-schemas">0</div>
+                            <div class="text-xs text-gray-500">Data Schemas</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Endpoint Testing Panel (hidden initially) -->
+                <div id="testing-panel" class="hidden">
+                    <!-- Endpoint Header -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6 p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <span id="method-badge" class="px-3 py-1 text-xs font-bold rounded"></span>
+                                    <code id="endpoint-path" class="text-sm font-mono text-gray-900 dark:text-white"></code>
+                                </div>
+                                <h2 id="endpoint-summary" class="text-xl font-semibold text-gray-900 dark:text-white mb-2"></h2>
+                                <p id="endpoint-description" class="text-gray-600 dark:text-gray-400"></p>
+                            </div>
+                            <button id="execute-btn" class="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 font-semibold">
+                                Execute
+                            </button>
+                        </div>
+                        
+                        <!-- Operation ID -->
+                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                            Operation ID: <code id="operation-id"></code>
+                        </div>
+                    </div>
+
+                    <!-- Parameters Section -->
+                    <div class="grid grid-cols-2 gap-6 mb-6">
+                        <!-- Request Parameters -->
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Request</h3>
+                            
+                            <!-- Path Parameters -->
+                            <div id="path-params-section" class="mb-4 hidden">
+                                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Path Parameters</h4>
+                                <div id="path-params" class="space-y-2"></div>
+                            </div>
+                            
+                            <!-- Query Parameters -->
+                            <div id="query-params-section" class="mb-4 hidden">
+                                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Query Parameters</h4>
+                                <div id="query-params" class="space-y-2"></div>
+                            </div>
+                            
+                            <!-- Headers (Collapsible) -->
+                            <div id="headers-section" class="mb-4">
+                                <button id="headers-toggle" class="flex items-center justify-between w-full text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 hover:text-gray-900 dark:hover:text-gray-100">
+                                    <span class="flex items-center">
+                                        <svg id="headers-arrow" class="w-4 h-4 mr-1 transform transition-transform" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        Headers
+                                    </span>
+                                    <span id="headers-count" class="text-xs text-gray-500 dark:text-gray-400">(0)</span>
+                                </button>
+                                <div id="headers-content" class="hidden">
+                                    <div id="headers" class="space-y-2">
+                                        <div class="flex space-x-2">
+                                            <input type="text" placeholder="Header name" class="flex-1 px-3 py-1 text-sm border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white header-input" oninput="updateHeaderCount()">
+                                            <input type="text" placeholder="Header value" class="flex-1 px-3 py-1 text-sm border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white header-input" oninput="updateHeaderCount()">
+                                            <button onclick="this.parentElement.remove(); updateHeaderCount();" class="px-2 py-1 text-sm text-red-500 hover:text-red-700">×</button>
+                                        </div>
+                                    </div>
+                                    <button id="add-header" class="mt-2 text-sm text-blue-500 hover:text-blue-600">+ Add header</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Request Body -->
+                            <div id="body-section" class="hidden">
+                                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Request Body (JSON)</h4>
+                                <textarea id="request-body" rows="10" class="w-full px-3 py-2 text-sm font-mono border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Response -->
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Response</h3>
+                            
+                            <!-- Response Status -->
+                            <div id="response-status" class="mb-4 hidden">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Status</span>
+                                    <div class="flex items-center space-x-2">
+                                        <span id="status-code" class="font-bold"></span>
+                                        <span id="response-time" class="text-xs text-gray-500"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Response Body -->
+                            <div id="response-section">
+                                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Response Body</h4>
+                                <div id="response-placeholder" class="text-center py-8 text-gray-500 dark:text-gray-400">
+                                    Execute the request to see the response
+                                </div>
+                                <pre id="response-body" class="hidden"><code class="language-json"></code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Request History -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Request History</h3>
+                            <button id="clear-history" class="px-3 py-1 text-sm bg-red-500 text-white rounded-md hover:bg-red-600" title="Clear all request history">
+                                Clear History
+                            </button>
+                        </div>
+                        <div id="history-list" class="space-y-2">
+                            <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                                No requests yet
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-96 p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Authentication</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
+                    <input type="text" id="auth-username" class="w-full px-3 py-2 border rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+                    <input type="password" id="auth-password" class="w-full px-3 py-2 border rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                </div>
+                
+                <div id="auth-token-section" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Or use JWT Token</label>
+                    <textarea id="auth-token" rows="3" class="w-full px-3 py-2 text-sm font-mono border rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                </div>
+            </div>
+            
+            <div class="flex justify-between mt-6">
+                <button id="auth-cancel" class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
+                    Cancel
+                </button>
+                <div class="space-x-2">
+                    <button id="auth-token-toggle" class="px-4 py-2 text-blue-500 hover:text-blue-600">
+                        Use Token
+                    </button>
+                    <button id="auth-submit" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                        Login
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Core libraries -->
+    <script src="js/api-client.js"></script>
+    
+    <!-- UI modules -->
+    <script src="js/ui-endpoint-builder.js"></script>
+    <script src="js/ui-parameter-builder.js"></script>
+    <script src="js/ui-template-builder.js"></script>
+    <script src="js/ui-history-builder.js"></script>
+    <script src="js/ui-builder.js"></script>
+    
+    <!-- Form modules -->
+    <script src="js/form-validation.js"></script>
+    <script src="js/form-renderer.js"></script>
+    <script src="js/schema-resolver.js"></script>
+    <script src="js/form-array-handler.js"></script>
+    <script src="js/form-builder.js"></script>
+    
+    <!-- Application modules -->
+    <script src="js/auth.js"></script>
+    <script src="js/endpoints.js"></script>
+    <script src="js/request-builder.js"></script>
+    <script src="js/response-handler.js"></script>
+    <script src="js/ui-helpers.js"></script>
+    
+    <!-- Main application -->
+    <script src="js/app.js"></script>
+</body>
+</html>

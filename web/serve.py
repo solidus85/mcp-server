@@ -25,7 +25,24 @@ def get_port_from_env():
                         return api_port + 80
     return 8090  # Default port if not found
 
-PORT = get_port_from_env()
+# Check if port is in use and find an alternative
+def get_available_port(preferred_port):
+    import socket
+    for port_offset in range(0, 10):
+        port = preferred_port + port_offset
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.bind(('', port))
+            sock.close()
+            if port_offset > 0:
+                print(f"Note: Port {preferred_port} was in use, using {port} instead")
+            return port
+        except OSError:
+            continue
+    print(f"Warning: Could not find available port near {preferred_port}, using it anyway")
+    return preferred_port
+
+PORT = get_available_port(get_port_from_env())
 DIRECTORY = Path(__file__).parent
 
 class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -46,19 +63,19 @@ def main():
     with socketserver.TCPServer(("", PORT), MyHTTPRequestHandler) as httpd:
         print(f"🚀 MCP Web Application")
         print(f"=" * 50)
-        print(f"Web Server: http://localhost:{PORT}/index-new.html")
+        print(f"Web Server: http://localhost:{PORT}")
         print(f"API Server: http://localhost:{api_port}")
         print(f"=" * 50)
         print(f"Available applications:")
-        print(f"  • Integrated App: http://localhost:{PORT}/index-new.html")
-        print(f"  • Legacy API Tester: http://localhost:{PORT}/index.html")
+        print(f"  • Integrated App: http://localhost:{PORT}")
+        print(f"  • Legacy API Tester: http://localhost:{PORT}/index-legacy.html")
         print(f"  • Standalone Email Viewer: http://localhost:{PORT}/email-viewer/")
         print(f"=" * 50)
         print(f"Press Ctrl+C to stop the server")
         
-        # Try to open browser with new integrated app
+        # Try to open browser with main app
         try:
-            webbrowser.open(f'http://localhost:{PORT}/index-new.html')
+            webbrowser.open(f'http://localhost:{PORT}')
         except:
             pass
         

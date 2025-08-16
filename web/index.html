@@ -3,309 +3,483 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MCP Server API Tester</title>
+    <title>MCP Server Web Application</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <style type="text/tailwindcss">
-        @layer base {
-            /* Override Tailwind's base input styles */
-            input[type="text"],
-            input[type="password"],
-            input[type="email"],
-            input[type="number"],
-            input[type="url"],
-            input[type="search"],
-            textarea,
-            select {
-                background-color: white;
-                color: #111827;
-            }
-        }
-    </style>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Prism for JSON syntax highlighting -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
     
-    <!-- Custom styles - loaded last for highest priority -->
-    <link rel="stylesheet" href="css/styles.css">
+    <!-- Shared styles -->
+    <link rel="stylesheet" href="shared/css/base.css">
+    <link rel="stylesheet" href="shared/css/components.css">
+    <link rel="stylesheet" href="shared/css/utilities.css">
+    
     <style>
-        /* Final overrides to ensure visibility */
-        #base-url {
-            background-color: white !important;
-            color: #111827 !important;
+        .module-content {
+            display: block;
         }
-        .dark #base-url {
-            background-color: #374151 !important;
-            color: white !important;
+        .module-content.hidden {
+            display: none;
+        }
+        .nav-link {
+            cursor: pointer;
+            user-select: none;
+        }
+        .nav-link:hover {
+            opacity: 0.9;
+        }
+        #loadingOverlay {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
         }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 h-screen overflow-hidden">
+<body class="bg-gray-50 dark:bg-gray-900 h-screen overflow-hidden flex flex-col">
     <!-- Header -->
-    <header class="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-        <div class="px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-                <h1 class="text-xl font-bold text-gray-900 dark:text-white">🚀 MCP Server API Tester</h1>
-                <span class="text-sm text-gray-500 dark:text-gray-400" id="api-version">v0.1.0</span>
-            </div>
-            <div class="flex items-center space-x-4">
-                <!-- Base URL Input -->
-                <div class="flex items-center space-x-2">
-                    <label class="text-sm text-gray-600 dark:text-gray-400">Base URL:</label>
-                    <input type="text" id="base-url" value="http://localhost:8010" 
-                           class="px-3 py-1 text-sm border rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+    <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+        <div class="px-4 py-3">
+            <div class="flex items-center justify-between">
+                <!-- Left section -->
+                <div class="flex items-center space-x-4">
+                    <!-- Logo/Title -->
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-server text-2xl text-blue-500"></i>
+                        <h1 class="text-xl font-semibold text-gray-800 dark:text-white">MCP Server</h1>
+                    </div>
+                    
+                    <!-- Module Navigation -->
+                    <nav id="moduleNav" class="hidden md:block">
+                        <!-- Navigation will be injected here -->
+                    </nav>
                 </div>
                 
-                <!-- Auth Status -->
-                <div id="auth-status" class="flex items-center space-x-2">
-                    <span class="w-2 h-2 bg-red-500 rounded-full" id="auth-indicator"></span>
-                    <span class="text-sm text-gray-600 dark:text-gray-400" id="auth-text">Not authenticated</span>
+                <!-- Right section -->
+                <div class="flex items-center space-x-4">
+                    <!-- Connection Status -->
+                    <div id="connectionStatus" class="flex items-center space-x-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900">
+                        <i class="fas fa-circle text-xs text-green-500"></i>
+                        <span class="text-sm text-green-800 dark:text-green-200">Connected</span>
+                    </div>
+                    
+                    <!-- Auth Status -->
+                    <div id="authStatus" class="flex items-center space-x-2">
+                        <i class="fas fa-user-circle text-gray-600 dark:text-gray-400"></i>
+                        <span id="authUsername" class="text-sm text-gray-700 dark:text-gray-300">Guest</span>
+                        <button id="authButton" class="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition">
+                            Login
+                        </button>
+                    </div>
+                    
+                    <!-- Theme Toggle -->
+                    <button id="themeToggle" class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition">
+                        <i class="fas fa-moon dark:hidden"></i>
+                        <i class="fas fa-sun hidden dark:block"></i>
+                    </button>
+                    
+                    <!-- Settings -->
+                    <button id="settingsBtn" class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition">
+                        <i class="fas fa-cog"></i>
+                    </button>
                 </div>
-                
-                <!-- Auth Button -->
-                <button id="auth-btn" class="px-4 py-1 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600">
-                    Login
-                </button>
-                
-                <!-- Theme Toggle -->
-                <button id="theme-toggle" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <svg class="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                    </svg>
-                </button>
             </div>
+            
+            <!-- Mobile navigation -->
+            <nav id="mobileNav" class="md:hidden mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                <!-- Mobile navigation will be injected here -->
+            </nav>
         </div>
     </header>
-
-    <!-- Main container with padding-top to account for fixed header -->
-    <div class="flex" style="height: calc(100vh - 3.5rem); margin-top: 3.5rem;">
-        <!-- Sidebar -->
-        <aside class="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
-            <!-- Search -->
-            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                <input type="text" id="endpoint-search" placeholder="Search endpoints..." 
-                       class="w-full px-3 py-2 border rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-            </div>
-            
-            <!-- Endpoints List -->
-            <div id="endpoints-list" class="p-4">
-                <!-- Endpoints will be loaded here -->
-                <div class="text-center py-8 text-gray-500">
-                    Loading endpoints...
+    
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-hidden">
+        <div id="moduleContainer" class="h-full">
+            <!-- Module content will be loaded here -->
+            <div class="flex items-center justify-center h-full">
+                <div class="text-center">
+                    <i class="fas fa-spinner fa-spin text-4xl text-blue-500 mb-4"></i>
+                    <p class="text-gray-600 dark:text-gray-400">Loading application...</p>
                 </div>
             </div>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto">
-            <div class="p-6">
-                <!-- Welcome Screen (shown when no endpoint selected) -->
-                <div id="welcome-screen" class="text-center py-12">
-                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Welcome to API Tester</h2>
-                    <p class="text-gray-600 dark:text-gray-400 mb-8">Select an endpoint from the sidebar to start testing</p>
-                    
-                    <div class="grid grid-cols-3 gap-4 max-w-2xl mx-auto">
-                        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                            <div class="text-3xl mb-2">📊</div>
-                            <div class="text-sm font-semibold text-gray-900 dark:text-white" id="total-endpoints">0</div>
-                            <div class="text-xs text-gray-500">Total Endpoints</div>
-                        </div>
-                        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                            <div class="text-3xl mb-2">🏷️</div>
-                            <div class="text-sm font-semibold text-gray-900 dark:text-white" id="total-tags">0</div>
-                            <div class="text-xs text-gray-500">API Groups</div>
-                        </div>
-                        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                            <div class="text-3xl mb-2">📝</div>
-                            <div class="text-sm font-semibold text-gray-900 dark:text-white" id="total-schemas">0</div>
-                            <div class="text-xs text-gray-500">Data Schemas</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Endpoint Testing Panel (hidden initially) -->
-                <div id="testing-panel" class="hidden">
-                    <!-- Endpoint Header -->
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-6 p-6">
-                        <div class="flex items-start justify-between mb-4">
-                            <div>
-                                <div class="flex items-center space-x-3 mb-2">
-                                    <span id="method-badge" class="px-3 py-1 text-xs font-bold rounded"></span>
-                                    <code id="endpoint-path" class="text-sm font-mono text-gray-900 dark:text-white"></code>
-                                </div>
-                                <h2 id="endpoint-summary" class="text-xl font-semibold text-gray-900 dark:text-white mb-2"></h2>
-                                <p id="endpoint-description" class="text-gray-600 dark:text-gray-400"></p>
-                            </div>
-                            <button id="execute-btn" class="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 font-semibold">
-                                Execute
-                            </button>
-                        </div>
-                        
-                        <!-- Operation ID -->
-                        <div class="text-xs text-gray-500 dark:text-gray-400">
-                            Operation ID: <code id="operation-id"></code>
-                        </div>
-                    </div>
-
-                    <!-- Parameters Section -->
-                    <div class="grid grid-cols-2 gap-6 mb-6">
-                        <!-- Request Parameters -->
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Request</h3>
-                            
-                            <!-- Path Parameters -->
-                            <div id="path-params-section" class="mb-4 hidden">
-                                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Path Parameters</h4>
-                                <div id="path-params" class="space-y-2"></div>
-                            </div>
-                            
-                            <!-- Query Parameters -->
-                            <div id="query-params-section" class="mb-4 hidden">
-                                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Query Parameters</h4>
-                                <div id="query-params" class="space-y-2"></div>
-                            </div>
-                            
-                            <!-- Headers (Collapsible) -->
-                            <div id="headers-section" class="mb-4">
-                                <button id="headers-toggle" class="flex items-center justify-between w-full text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 hover:text-gray-900 dark:hover:text-gray-100">
-                                    <span class="flex items-center">
-                                        <svg id="headers-arrow" class="w-4 h-4 mr-1 transform transition-transform" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-                                        </svg>
-                                        Headers
-                                    </span>
-                                    <span id="headers-count" class="text-xs text-gray-500 dark:text-gray-400">(0)</span>
-                                </button>
-                                <div id="headers-content" class="hidden">
-                                    <div id="headers" class="space-y-2">
-                                        <div class="flex space-x-2">
-                                            <input type="text" placeholder="Header name" class="flex-1 px-3 py-1 text-sm border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white header-input" oninput="updateHeaderCount()">
-                                            <input type="text" placeholder="Header value" class="flex-1 px-3 py-1 text-sm border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white header-input" oninput="updateHeaderCount()">
-                                            <button onclick="this.parentElement.remove(); updateHeaderCount();" class="px-2 py-1 text-sm text-red-500 hover:text-red-700">×</button>
-                                        </div>
-                                    </div>
-                                    <button id="add-header" class="mt-2 text-sm text-blue-500 hover:text-blue-600">+ Add header</button>
-                                </div>
-                            </div>
-                            
-                            <!-- Request Body -->
-                            <div id="body-section" class="hidden">
-                                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Request Body (JSON)</h4>
-                                <textarea id="request-body" rows="10" class="w-full px-3 py-2 text-sm font-mono border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
-                            </div>
-                        </div>
-
-                        <!-- Response -->
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Response</h3>
-                            
-                            <!-- Response Status -->
-                            <div id="response-status" class="mb-4 hidden">
-                                <div class="flex items-center justify-between mb-2">
-                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Status</span>
-                                    <div class="flex items-center space-x-2">
-                                        <span id="status-code" class="font-bold"></span>
-                                        <span id="response-time" class="text-xs text-gray-500"></span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Response Body -->
-                            <div id="response-section">
-                                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Response Body</h4>
-                                <div id="response-placeholder" class="text-center py-8 text-gray-500 dark:text-gray-400">
-                                    Execute the request to see the response
-                                </div>
-                                <pre id="response-body" class="hidden"><code class="language-json"></code></pre>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Request History -->
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Request History</h3>
-                            <button id="clear-history" class="px-3 py-1 text-sm bg-red-500 text-white rounded-md hover:bg-red-600" title="Clear all request history">
-                                Clear History
-                            </button>
-                        </div>
-                        <div id="history-list" class="space-y-2">
-                            <div class="text-center py-4 text-gray-500 dark:text-gray-400">
-                                No requests yet
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        </div>
+    </main>
+    
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xl">
+            <div class="flex items-center space-x-3">
+                <i class="fas fa-spinner fa-spin text-2xl text-blue-500"></i>
+                <span class="text-gray-700 dark:text-gray-300">Loading module...</span>
             </div>
-        </main>
+        </div>
     </div>
-
+    
+    <!-- Notification Container -->
+    <div id="notificationContainer" class="fixed top-4 right-4 z-50 space-y-2">
+        <!-- Notifications will be added here -->
+    </div>
+    
     <!-- Auth Modal -->
-    <div id="auth-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-96 p-6">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Authentication</h2>
+    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="absolute inset-0 bg-black opacity-50" onclick="closeAuthModal()"></div>
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xl z-10 w-96">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Authentication</h2>
             
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
-                    <input type="text" id="auth-username" class="w-full px-3 py-2 border rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
-                    <input type="password" id="auth-password" class="w-full px-3 py-2 border rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+            <div id="loginForm">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Username</label>
+                    <input type="text" id="loginUsername" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 
-                <div id="auth-token-section" class="hidden">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Or use JWT Token</label>
-                    <textarea id="auth-token" rows="3" class="w-full px-3 py-2 text-sm font-mono border rounded-md text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
+                    <input type="password" id="loginPassword" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div class="flex space-x-2">
+                    <button onclick="performLogin()" class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                        Login
+                    </button>
+                    <button onclick="closeAuthModal()" class="flex-1 px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition">
+                        Cancel
+                    </button>
+                </div>
+                
+                <div class="mt-4 text-center">
+                    <a href="#" onclick="showTokenForm()" class="text-sm text-blue-500 hover:underline">Use API Token</a>
                 </div>
             </div>
             
-            <div class="flex justify-between mt-6">
-                <button id="auth-cancel" class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
-                    Cancel
-                </button>
-                <div class="space-x-2">
-                    <button id="auth-token-toggle" class="px-4 py-2 text-blue-500 hover:text-blue-600">
-                        Use Token
+            <div id="tokenForm" class="hidden">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">API Token</label>
+                    <input type="text" id="apiToken" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter your API token">
+                </div>
+                
+                <div class="flex space-x-2">
+                    <button onclick="setApiToken()" class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                        Set Token
                     </button>
-                    <button id="auth-submit" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
-                        Login
+                    <button onclick="closeAuthModal()" class="flex-1 px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition">
+                        Cancel
                     </button>
+                </div>
+                
+                <div class="mt-4 text-center">
+                    <a href="#" onclick="showLoginForm()" class="text-sm text-blue-500 hover:underline">Use Username/Password</a>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- Core Scripts (loaded first) -->
+    <script src="config/app-config.js"></script>
+    <script src="core/event-bus.js"></script>
+    <script src="shared/js/auth-service.js"></script>
+    <script src="shared/js/api-client.js"></script>
+    <script src="core/module-loader.js"></script>
+    <script src="core/navigation.js"></script>
+    
+    <!-- Main Application Script -->
+    <script>
+        // Application initialization
+        let app = {
+            authService: window.authService,
+            apiClient: window.sharedApiClient,
+            eventBus: window.eventBus,
+            moduleLoader: window.moduleLoader,
+            navigation: window.navigation
+        };
 
-    <!-- Scripts -->
-    <!-- Core libraries -->
-    <script src="js/api-client.js"></script>
-    
-    <!-- UI modules -->
-    <script src="js/ui-endpoint-builder.js"></script>
-    <script src="js/ui-parameter-builder.js"></script>
-    <script src="js/ui-template-builder.js"></script>
-    <script src="js/ui-history-builder.js"></script>
-    <script src="js/ui-builder.js"></script>
-    
-    <!-- Form modules -->
-    <script src="js/form-validation.js"></script>
-    <script src="js/form-renderer.js"></script>
-    <script src="js/schema-resolver.js"></script>
-    <script src="js/form-array-handler.js"></script>
-    <script src="js/form-builder.js"></script>
-    
-    <!-- Application modules -->
-    <script src="js/auth.js"></script>
-    <script src="js/endpoints.js"></script>
-    <script src="js/request-builder.js"></script>
-    <script src="js/response-handler.js"></script>
-    <script src="js/ui-helpers.js"></script>
-    
-    <!-- Main application -->
-    <script src="js/app.js"></script>
+        // Initialize application
+        async function initApp() {
+            try {
+                // Initialize module loader
+                await app.moduleLoader.init('moduleContainer');
+                
+                // Initialize navigation
+                await app.navigation.init('moduleNav');
+                
+                // Setup mobile navigation
+                setupMobileNavigation();
+                
+                // Setup event listeners
+                setupEventListeners();
+                
+                // Update auth status
+                updateAuthStatus();
+                
+                // Test connection
+                await testConnection();
+                
+                console.info('Application initialized successfully');
+                
+            } catch (error) {
+                console.error('Failed to initialize application:', error);
+                showNotification('error', 'Initialization Error', error.message);
+            }
+        }
+
+        // Setup mobile navigation
+        function setupMobileNavigation() {
+            const mobileNav = document.getElementById('mobileNav');
+            const moduleNav = document.getElementById('moduleNav');
+            
+            if (mobileNav && moduleNav) {
+                // Clone navigation for mobile
+                mobileNav.innerHTML = moduleNav.innerHTML;
+                
+                // Update classes for mobile styling
+                const navList = mobileNav.querySelector('.nav-list');
+                if (navList) {
+                    navList.classList.remove('space-x-1');
+                    navList.classList.add('space-y-1', 'flex-col');
+                }
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Theme toggle
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            
+            // Auth button
+            document.getElementById('authButton').addEventListener('click', handleAuthButton);
+            
+            // Settings button
+            document.getElementById('settingsBtn').addEventListener('click', openSettings);
+            
+            // Auth events
+            app.eventBus.on(ModuleEvents.AUTH_LOGIN, updateAuthStatus);
+            app.eventBus.on(ModuleEvents.AUTH_LOGOUT, updateAuthStatus);
+            
+            // Module events
+            app.eventBus.on(ModuleEvents.MODULE_LOADED, hideLoadingOverlay);
+            app.eventBus.on(ModuleEvents.MODULE_ERROR, (data) => {
+                hideLoadingOverlay();
+                showNotification('error', 'Module Error', data.error);
+            });
+            
+            // API events
+            app.eventBus.on(ModuleEvents.API_REQUEST_START, showLoadingIndicator);
+            app.eventBus.on(ModuleEvents.API_REQUEST_END, hideLoadingIndicator);
+            
+            // Notification events
+            app.eventBus.on(ModuleEvents.UI_NOTIFICATION, (data) => {
+                showNotification(data.type, data.title, data.message, data.duration);
+            });
+        }
+
+        // Theme management
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.contains('dark');
+            
+            if (isDark) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+            
+            app.eventBus.emit(ModuleEvents.UI_THEME_CHANGED, { theme: isDark ? 'light' : 'dark' });
+        }
+
+        // Initialize theme
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        }
+
+        // Auth management
+        function updateAuthStatus() {
+            const authButton = document.getElementById('authButton');
+            const authUsername = document.getElementById('authUsername');
+            
+            if (app.authService.isLoggedIn()) {
+                const user = app.authService.getUser();
+                authUsername.textContent = user?.username || 'Authenticated';
+                authButton.textContent = 'Logout';
+            } else {
+                authUsername.textContent = 'Guest';
+                authButton.textContent = 'Login';
+            }
+        }
+
+        function handleAuthButton() {
+            if (app.authService.isLoggedIn()) {
+                app.authService.logout();
+                updateAuthStatus();
+                showNotification('info', 'Logged Out', 'You have been logged out successfully');
+            } else {
+                showAuthModal();
+            }
+        }
+
+        function showAuthModal() {
+            document.getElementById('authModal').classList.remove('hidden');
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.add('hidden');
+        }
+
+        function showLoginForm() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('tokenForm').classList.add('hidden');
+        }
+
+        function showTokenForm() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('tokenForm').classList.remove('hidden');
+        }
+
+        async function performLogin() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!username || !password) {
+                showNotification('error', 'Invalid Input', 'Please enter username and password');
+                return;
+            }
+            
+            try {
+                await app.authService.login(username, password);
+                closeAuthModal();
+                updateAuthStatus();
+                showNotification('success', 'Login Successful', `Welcome back, ${username}!`);
+            } catch (error) {
+                showNotification('error', 'Login Failed', error.message);
+            }
+        }
+
+        function setApiToken() {
+            const token = document.getElementById('apiToken').value;
+            
+            if (!token) {
+                showNotification('error', 'Invalid Input', 'Please enter an API token');
+                return;
+            }
+            
+            app.authService.setToken(token);
+            closeAuthModal();
+            updateAuthStatus();
+            showNotification('success', 'Token Set', 'API token has been set successfully');
+        }
+
+        // Connection testing
+        async function testConnection() {
+            try {
+                await app.apiClient.get('/health');
+                setConnectionStatus('connected');
+            } catch (error) {
+                setConnectionStatus('disconnected');
+                if (typeof Logger !== 'undefined') Logger.warn('API connection failed:', error);
+            }
+        }
+
+        function setConnectionStatus(status) {
+            const statusElement = document.getElementById('connectionStatus');
+            const icon = statusElement.querySelector('i');
+            const text = statusElement.querySelector('span');
+            
+            if (status === 'connected') {
+                statusElement.className = 'flex items-center space-x-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900';
+                icon.className = 'fas fa-circle text-xs text-green-500';
+                text.className = 'text-sm text-green-800 dark:text-green-200';
+                text.textContent = 'Connected';
+            } else {
+                statusElement.className = 'flex items-center space-x-2 px-3 py-1 rounded-full bg-red-100 dark:bg-red-900';
+                icon.className = 'fas fa-circle text-xs text-red-500';
+                text.className = 'text-sm text-red-800 dark:text-red-200';
+                text.textContent = 'Disconnected';
+            }
+        }
+
+        // Settings
+        function openSettings() {
+            showNotification('info', 'Settings', 'Settings panel coming soon!');
+        }
+
+        // Loading indicators
+        let loadingCount = 0;
+
+        function showLoadingIndicator() {
+            loadingCount++;
+            if (loadingCount === 1) {
+                // Show subtle loading indicator
+            }
+        }
+
+        function hideLoadingIndicator() {
+            loadingCount = Math.max(0, loadingCount - 1);
+            if (loadingCount === 0) {
+                // Hide loading indicator
+            }
+        }
+
+        function showLoadingOverlay() {
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+        }
+
+        function hideLoadingOverlay() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }
+
+        // Notifications
+        function showNotification(type, title, message, duration = 5000) {
+            const container = document.getElementById('notificationContainer');
+            
+            const notification = document.createElement('div');
+            notification.className = `notification p-4 rounded-lg shadow-lg max-w-sm animate-slide-in`;
+            
+            // Set color based on type
+            const colors = {
+                success: 'bg-green-500 text-white',
+                error: 'bg-red-500 text-white',
+                warning: 'bg-yellow-500 text-white',
+                info: 'bg-blue-500 text-white'
+            };
+            
+            notification.classList.add(...(colors[type] || colors.info).split(' '));
+            
+            notification.innerHTML = `
+                <div class="flex items-start space-x-3">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                    <div class="flex-1">
+                        <h4 class="font-semibold">${title}</h4>
+                        <p class="text-sm opacity-90">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-white opacity-75 hover:opacity-100">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.appendChild(notification);
+            
+            // Auto remove after duration
+            setTimeout(() => {
+                notification.classList.add('animate-slide-out');
+                setTimeout(() => notification.remove(), 300);
+            }, duration);
+        }
+
+        // Initialize theme and app on load
+        initTheme();
+        document.addEventListener('DOMContentLoaded', initApp);
+
+        // Periodic connection check
+        setInterval(testConnection, 30000);
+    </script>
 </body>
 </html>

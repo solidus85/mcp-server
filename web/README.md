@@ -1,46 +1,46 @@
-# MCP Server API Testing Tool
+# MCP Server Web Application
 
-A lightweight, browser-based tool for testing the MCP Server API endpoints.
+A modular web application for the MCP Server, featuring an integrated API tester and email viewer with extensible module architecture.
 
 ## Features
 
-- 🚀 **Interactive API Testing** - Test all 88 endpoints directly from your browser
-- 🔐 **Authentication Support** - Login with username/password or JWT token
-- 📝 **Dynamic Form Generation** - Automatically generates input forms based on OpenAPI spec
-- 🎨 **Dark/Light Theme** - Toggle between themes for comfortable viewing
-- 📊 **Request History** - Track your recent API calls
-- 🔍 **Endpoint Search** - Quickly find endpoints by name or description
-- 💾 **Persistent Settings** - Saves your base URL and auth token
+- 🎯 **Modular Architecture** - Easily switch between different application modules
+- 🚀 **API Testing Module** - Test all endpoints with dynamic form generation
+- 📧 **Email Viewer Module** - Browse and manage emails with threading support
+- 🔐 **Unified Authentication** - Single sign-on across all modules
+- 🎨 **Dark/Light Theme** - Consistent theming across the application
+- 📊 **Shared Services** - Common API client and configuration
+- 💾 **Persistent Settings** - Saves preferences and authentication state
+- 🔌 **Extensible** - Easy to add new modules using the provided template
 
 ## Usage
 
-### Option 1: Open Directly in Browser
-Simply open `web/index.html` in your browser:
+### Quick Start
 ```bash
 # From the project root
-open web/index.html
-# Or on Linux/WSL
-xdg-open web/index.html
-# Or on Windows
-start web/index.html
+python web/serve.py
+# The app will open automatically in your browser
 ```
 
-### Option 2: Serve with Python
+### Alternative Methods
+
+#### Serve with Python
 ```bash
-# From the project root
-python -m http.server 8080 --directory web
-# Then open http://localhost:8080
+# From the web directory
+cd web
+python -m http.server 8090
+# Then open http://localhost:8090
 ```
 
-### Option 3: Serve with Node.js
+#### Serve with Node.js
 ```bash
 # Install http-server globally if not already installed
 npm install -g http-server
 
 # From the web directory
 cd web
-http-server -p 8080
-# Then open http://localhost:8080
+http-server -p 8090
+# Then open http://localhost:8090
 ```
 
 ## Getting Started
