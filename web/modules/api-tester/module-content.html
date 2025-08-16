@@ -1,37 +1,17 @@
 <!-- API Tester Module Content -->
 <div class="h-full flex flex-col">
-    <!-- Header Bar -->
-    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
-        <div class="flex items-center justify-between">
-            <!-- Left side: Title and Base URL -->
-            <div class="flex items-center space-x-4">
-                <h2 class="text-lg font-semibold text-gray-800 dark:text-white">API Tester</h2>
-                <div class="flex items-center space-x-2">
-                    <label class="text-sm text-gray-600 dark:text-gray-400">Base URL:</label>
-                    <input 
-                        type="text" 
-                        id="base-url"
-                        value="http://localhost:8010"
-                        class="px-3 py-1 text-sm border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                        style="width: 250px;">
-                </div>
-            </div>
-            
-            <!-- Right side: Auth and Theme -->
-            <div class="flex items-center space-x-4">
-                <!-- Auth Status -->
-                <div class="flex items-center space-x-2">
-                    <div id="auth-indicator" class="w-2 h-2 bg-red-500 rounded-full"></div>
-                    <span id="auth-text" class="text-sm text-gray-600 dark:text-gray-400">Not authenticated</span>
-                    <button id="auth-btn" class="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600">Login</button>
-                </div>
-                
-                <!-- Theme Toggle -->
-                <button id="theme-toggle" class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                    </svg>
-                </button>
+    <!-- Module Configuration Bar -->
+    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2">
+        <div class="flex items-center space-x-4">
+            <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300">API Configuration</h2>
+            <div class="flex items-center space-x-2">
+                <label class="text-sm text-gray-600 dark:text-gray-400">Base URL:</label>
+                <input 
+                    type="text" 
+                    id="base-url"
+                    value="http://localhost:8010"
+                    class="px-3 py-1 text-sm border rounded text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    style="width: 250px;">
             </div>
         </div>
     </div>
