@@ -1,4 +1,5 @@
 <!-- Email Viewer Module Content -->
+<!-- Note: This module uses shared styles from /shared/css/components.css -->
 <div class="h-full flex">
     <!-- Left Sidebar - Thread List -->
     <div class="w-96 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
@@ -55,9 +56,12 @@
     </div>
 </div>
 
+<!-- Load Shared Scripts -->
+<script src="/shared/js/utils.js"></script>
+<script src="/shared/js/api-client.js"></script>
+
 <!-- Load Email Viewer Scripts -->
-<script src="/modules/email-viewer/js/utils.js"></script>
-<script src="/modules/email-viewer/js/api-client.js"></script>
+<script src="/modules/email-viewer/js/email-api-client.js"></script>
 <script src="/modules/email-viewer/js/thread-list.js"></script>
 <script src="/modules/email-viewer/js/email-chain.js"></script>
 <script src="/modules/email-viewer/js/search-filter.js"></script>

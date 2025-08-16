@@ -1,4 +1,4 @@
-/* UI Components for MCP Server API Tester */
+/* Shared UI Components for MCP Server Web Application */
 
 /* Method badges */
 .method-get {
@@ -181,4 +181,196 @@
 #body-view-form,
 #body-view-json {
     transition: all 0.2s ease;
+}
+
+/* ============================================ */
+/* Email Viewer Components */
+/* ============================================ */
+
+/* Filter chips */
+.filter-chip {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: 9999px;
+    background-color: #f3f4f6;
+    color: #4b5563;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dark .filter-chip {
+    background-color: #374151;
+    color: #9ca3af;
+}
+
+.filter-chip:hover {
+    background-color: #e5e7eb;
+}
+
+.dark .filter-chip:hover {
+    background-color: #4b5563;
+}
+
+.filter-chip.active {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.filter-chip.active:hover {
+    background-color: #2563eb;
+}
+
+/* Action buttons */
+.action-btn {
+    padding: 0.5rem;
+    color: #4b5563;
+    border-radius: 0.25rem;
+    transition: all 0.2s;
+}
+
+.dark .action-btn {
+    color: #9ca3af;
+}
+
+.action-btn:hover {
+    background-color: #f3f4f6;
+    color: #111827;
+}
+
+.dark .action-btn:hover {
+    background-color: #374151;
+    color: white;
+}
+
+/* Thread item */
+.thread-item {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dark .thread-item {
+    border-bottom-color: #374151;
+}
+
+.thread-item:hover {
+    background-color: #f9fafb;
+}
+
+.dark .thread-item:hover {
+    background-color: rgba(55, 65, 81, 0.5);
+}
+
+.thread-item.active {
+    background-color: #eff6ff;
+    border-left: 4px solid #3b82f6;
+}
+
+.dark .thread-item.active {
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+.thread-item.unread {
+    font-weight: 600;
+}
+
+/* Email message card */
+.email-card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    margin-bottom: 1rem;
+    transition: all 0.2s;
+}
+
+.dark .email-card {
+    background-color: #1f2937;
+    border-color: #374151;
+}
+
+.email-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.email-card.collapsed .email-body {
+    display: none;
+}
+
+.email-card.unread {
+    border-left: 4px solid #3b82f6;
+}
+
+/* Avatar */
+.avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+    min-width: 2.5rem;
+}
+
+/* Badge */
+.badge {
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 9999px;
+    font-weight: 500;
+}
+
+.badge-blue {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.dark .badge-blue {
+    background-color: #1e3a8a;
+    color: #bfdbfe;
+}
+
+.badge-green {
+    background-color: #d1fae5;
+    color: #14532d;
+}
+
+.dark .badge-green {
+    background-color: #14532d;
+    color: #a7f3d0;
+}
+
+.badge-red {
+    background-color: #fee2e2;
+    color: #7f1d1d;
+}
+
+.dark .badge-red {
+    background-color: #7f1d1d;
+    color: #fecaca;
+}
+
+.badge-yellow {
+    background-color: #fef3c7;
+    color: #78350f;
+}
+
+.dark .badge-yellow {
+    background-color: #78350f;
+    color: #fde68a;
+}
+
+.badge-gray {
+    background-color: #f3f4f6;
+    color: #1f2937;
+}
+
+.dark .badge-gray {
+    background-color: #374151;
+    color: #e5e7eb;
 }
