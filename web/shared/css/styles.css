@@ -1,0 +1,19 @@
+/* Main stylesheet for MCP Server API Tester */
+
+/* Import modular CSS files */
+@import url('base.css');
+@import url('components.css');
+@import url('forms.css');
+@import url('utilities.css');
+@import url('animations.css');
+
+/* 
+ * This file now serves as the main entry point that imports all modular CSS files.
+ * Each module handles a specific aspect of the styling:
+ * 
+ * - base.css: Base styles, resets, scrollbars, and responsive layout
+ * - components.css: UI components like badges, buttons, cards, and sections
+ * - forms.css: Form elements, inputs, checkboxes, and form controls
+ * - utilities.css: Utility classes for states, validation, and errors
+ * - animations.css: Animations and transitions
+ */

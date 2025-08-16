@@ -1,0 +1,153 @@
+<!-- Module Template HTML -->
+<!-- This HTML will be loaded into the module container -->
+
+<div class="module-wrapper h-full flex flex-col">
+    <!-- Module Header -->
+    <div class="module-header bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <i class="fas fa-puzzle-piece text-2xl text-blue-500"></i>
+                <h2 class="text-xl font-semibold text-gray-800 dark:text-white">Module Name</h2>
+                <span id="moduleStatus" class="text-sm px-2 py-1 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                    Initializing...
+                </span>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <!-- Module Actions -->
+                <button id="moduleActionButton" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition">
+                    <i class="fas fa-play mr-2"></i>Action
+                </button>
+                
+                <button id="moduleRefreshButton" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                
+                <button id="moduleSettingsButton" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Module Content Area -->
+    <div class="module-content flex-1 overflow-auto p-4">
+        <!-- Main Content Container -->
+        <div id="moduleDataContainer" class="space-y-4">
+            <!-- Content will be dynamically loaded here -->
+            
+            <!-- Example content structure -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold mb-3 text-gray-800 dark:text-white">
+                    Welcome to Your Module
+                </h3>
+                <p class="text-gray-600 dark:text-gray-400">
+                    This is a template module. Replace this content with your module's functionality.
+                </p>
+                
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Example cards -->
+                    <div class="bg-gray-50 dark:bg-gray-700 rounded p-4">
+                        <h4 class="font-medium text-gray-800 dark:text-white mb-2">Feature 1</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            Description of feature 1
+                        </p>
+                    </div>
+                    
+                    <div class="bg-gray-50 dark:bg-gray-700 rounded p-4">
+                        <h4 class="font-medium text-gray-800 dark:text-white mb-2">Feature 2</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            Description of feature 2
+                        </p>
+                    </div>
+                    
+                    <div class="bg-gray-50 dark:bg-gray-700 rounded p-4">
+                        <h4 class="font-medium text-gray-800 dark:text-white mb-2">Feature 3</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            Description of feature 3
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Data Display Area -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div class="border-b border-gray-200 dark:border-gray-700 px-6 py-3">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Data Display</h3>
+                </div>
+                <div class="p-6">
+                    <div id="dataDisplay" class="space-y-2">
+                        <!-- Data items will be rendered here -->
+                        <p class="text-gray-500 dark:text-gray-400 text-center py-8">
+                            No data loaded yet. Click refresh to load data.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Module Footer (optional) -->
+    <div class="module-footer bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-4 py-2">
+        <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+            <span>Module Version: 1.0.0</span>
+            <span id="moduleLastUpdate">Last updated: Never</span>
+        </div>
+    </div>
+</div>
+
+<!-- Module-specific styles (optional) -->
+<style>
+    .module-wrapper {
+        /* Module-specific styles */
+    }
+    
+    .data-item {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        background-color: var(--bg-secondary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .data-item:hover {
+        background-color: var(--bg-hover);
+    }
+</style>
+
+<!-- Module-specific scripts (optional) -->
+<script>
+    // Module-specific initialization code
+    // This will be executed when the module HTML is loaded
+    
+    (function() {
+        // Setup module-specific event handlers
+        const refreshButton = document.getElementById('moduleRefreshButton');
+        if (refreshButton) {
+            refreshButton.addEventListener('click', async () => {
+                // Call module's refresh method
+                if (window['module-idModule'] && window['module-idModule'].refreshData) {
+                    await window['module-idModule'].refreshData();
+                }
+            });
+        }
+        
+        const settingsButton = document.getElementById('moduleSettingsButton');
+        if (settingsButton) {
+            settingsButton.addEventListener('click', () => {
+                // Open settings modal
+                alert('Settings feature coming soon!');
+            });
+        }
+        
+        // Update last update time
+        function updateLastUpdateTime() {
+            const element = document.getElementById('moduleLastUpdate');
+            if (element) {
+                element.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+            }
+        }
+        
+        // Call on data load
+        window.eventBus.on('module:module-id:refreshed', updateLastUpdateTime);
+    })();
+</script>

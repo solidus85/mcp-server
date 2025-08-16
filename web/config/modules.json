@@ -1,0 +1,30 @@
+{
+  "modules": [
+    {
+      "id": "api-tester",
+      "name": "API Tester",
+      "description": "Interactive API testing tool with dynamic form generation",
+      "icon": "fa-flask",
+      "path": "/modules/api-tester/",
+      "entryPoint": "module.js",
+      "enabled": true,
+      "order": 1,
+      "permissions": ["api_access"],
+      "dependencies": ["auth-service", "api-client"]
+    },
+    {
+      "id": "email-viewer",
+      "name": "Email Viewer",
+      "description": "Email management and viewing interface",
+      "icon": "fa-envelope",
+      "path": "/modules/email-viewer/",
+      "entryPoint": "module.js",
+      "enabled": true,
+      "order": 2,
+      "permissions": ["api_access", "email_read"],
+      "dependencies": ["auth-service", "api-client"]
+    }
+  ],
+  "version": "1.0.0",
+  "defaultModule": "api-tester"
+}

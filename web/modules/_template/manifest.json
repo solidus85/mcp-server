@@ -1,0 +1,18 @@
+{
+  "id": "module-id",
+  "name": "Module Name",
+  "description": "Brief description of what this module does",
+  "version": "1.0.0",
+  "author": "Your Name",
+  "icon": "fa-icon-name",
+  "path": "/modules/module-id/",
+  "entryPoint": "module.js",
+  "enabled": true,
+  "order": 100,
+  "permissions": ["api_access"],
+  "dependencies": ["auth-service", "api-client"],
+  "config": {
+    "customSetting1": "value1",
+    "customSetting2": "value2"
+  }
+}

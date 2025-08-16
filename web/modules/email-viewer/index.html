@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Viewer - MCP Server</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="css/app.css">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 h-screen overflow-hidden">
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center px-4">
+        <div class="flex items-center justify-between w-full">
+            <div class="flex items-center space-x-4">
+                <h1 class="text-xl font-semibold text-gray-800 dark:text-white">
+                    <i class="fas fa-envelope mr-2"></i>Email Viewer
+                </h1>
+                <span id="connectionStatus" class="text-sm px-2 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                    <i class="fas fa-circle text-xs mr-1"></i>Connected
+                </span>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <!-- Search Bar -->
+                <div class="relative">
+                    <input type="text" id="searchInput" placeholder="Search emails..." 
+                           class="w-64 px-4 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                </div>
+                
+                <!-- Filter Button -->
+                <button id="filterBtn" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                    <i class="fas fa-filter mr-2"></i>Filters
+                </button>
+                
+                <!-- Refresh Button -->
+                <button id="refreshBtn" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                    <i class="fas fa-sync-alt mr-2"></i>Refresh
+                </button>
+                
+                <!-- Theme Toggle -->
+                <button id="themeToggle" class="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                    <i class="fas fa-moon dark:hidden"></i>
+                    <i class="fas fa-sun hidden dark:inline"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content Area -->
+    <div class="flex h-[calc(100vh-4rem)]">
+        <!-- Thread List Sidebar -->
+        <aside id="threadSidebar" class="w-96 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
+            <!-- Thread List Header -->
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-lg font-semibold text-gray-800 dark:text-white">Email Threads</h2>
+                    <span id="threadCount" class="text-sm text-gray-500 dark:text-gray-400">0 threads</span>
+                </div>
+                
+                <!-- Quick Filters -->
+                <div class="flex space-x-2">
+                    <button class="filter-chip active" data-filter="all">All</button>
+                    <button class="filter-chip" data-filter="unread">Unread</button>
+                    <button class="filter-chip" data-filter="flagged">Flagged</button>
+                    <button class="filter-chip" data-filter="recent">Recent</button>
+                </div>
+            </div>
+            
+            <!-- Thread List -->
+            <div id="threadList" class="flex-1 overflow-y-auto">
+                <!-- Thread items will be inserted here -->
+                <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+                    <i class="fas fa-inbox text-4xl mb-4"></i>
+                    <p>Loading threads...</p>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Email Chain Viewer -->
+        <main id="emailViewer" class="flex-1 bg-gray-50 dark:bg-gray-900 overflow-hidden flex flex-col">
+            <!-- Email Chain Header -->
+            <div id="chainHeader" class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 hidden">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 id="chainSubject" class="text-xl font-semibold text-gray-800 dark:text-white mb-1"></h2>
+                        <p id="chainInfo" class="text-sm text-gray-500 dark:text-gray-400"></p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="markAllReadBtn" class="action-btn" title="Mark all as read">
+                            <i class="fas fa-check-double"></i>
+                        </button>
+                        <button id="flagThreadBtn" class="action-btn" title="Flag thread">
+                            <i class="far fa-flag"></i>
+                        </button>
+                        <button id="archiveThreadBtn" class="action-btn" title="Archive thread">
+                            <i class="fas fa-archive"></i>
+                        </button>
+                        <button id="deleteThreadBtn" class="action-btn text-red-500 hover:text-red-600" title="Delete thread">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Email Messages Container -->
+            <div id="emailChain" class="flex-1 overflow-y-auto p-4">
+                <!-- Welcome/Empty State -->
+                <div id="emptyState" class="flex items-center justify-center h-full">
+                    <div class="text-center">
+                        <i class="fas fa-envelope-open-text text-6xl text-gray-300 dark:text-gray-600 mb-4"></i>
+                        <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">Select a thread to view</h3>
+                        <p class="text-gray-500 dark:text-gray-500">Choose an email thread from the sidebar to see the conversation</p>
+                    </div>
+                </div>
+                
+                <!-- Email messages will be inserted here -->
+            </div>
+        </main>
+    </div>
+    
+    <!-- Filter Modal -->
+    <div id="filterModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-96">
+            <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Filter Emails</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date Range</label>
+                    <div class="flex space-x-2">
+                        <input type="date" id="startDate" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <input type="date" id="endDate" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Project</label>
+                    <select id="projectFilter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                        <option value="">All Projects</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="showUnread" class="mr-2">
+                            <span class="text-gray-700 dark:text-gray-300">Show only unread</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="showFlagged" class="mr-2">
+                            <span class="text-gray-700 dark:text-gray-300">Show only flagged</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-end space-x-2 mt-6">
+                <button id="cancelFilter" class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">Cancel</button>
+                <button id="applyFilter" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Apply Filters</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+    
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/api-client.js"></script>
+    <script src="js/thread-list.js"></script>
+    <script src="js/email-chain.js"></script>
+    <script src="js/search-filter.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
