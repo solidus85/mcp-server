@@ -45,7 +45,7 @@ class Navigation {
 
             // Create navigation items
             const navList = document.createElement('ul');
-            navList.className = 'nav-list flex space-x-2';
+            navList.className = 'nav-list';
 
             registry.modules
                 .filter(module => module.enabled)
@@ -70,19 +70,18 @@ class Navigation {
         li.className = 'nav-item';
 
         const button = document.createElement('button');
-        button.className = 'nav-link px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600';
+        button.className = 'nav-link';
         button.setAttribute('data-module', module.id);
         
         // Add icon
         if (module.icon) {
             const icon = document.createElement('i');
-            icon.className = `fas ${module.icon} text-sm`;
+            icon.className = `fas ${module.icon}`;
             button.appendChild(icon);
         }
 
         // Add text
         const text = document.createElement('span');
-        text.className = 'text-sm font-medium';
         text.textContent = module.name;
         button.appendChild(text);
 
@@ -148,15 +147,13 @@ class Navigation {
         // Remove active class from all nav items
         const navLinks = this.navContainer.querySelectorAll('.nav-link');
         navLinks.forEach(link => {
-            link.classList.remove('bg-blue-500', 'text-white');
-            link.classList.add('bg-gray-100', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
+            link.classList.remove('active');
         });
 
         // Add active class to current nav item
         const activeLink = this.navContainer.querySelector(`[data-module="${activeModuleId}"]`);
         if (activeLink) {
-            activeLink.classList.remove('bg-gray-100', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
-            activeLink.classList.add('bg-blue-500', 'text-white');
+            activeLink.classList.add('active');
         }
     }
 
